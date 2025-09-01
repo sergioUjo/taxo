@@ -1,0 +1,71 @@
+---
+description: Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness.
+globs: .cursor/rules/*.mdc
+alwaysApply: true
+---
+
+# Next.js React TypeScript + Convex Guidelines
+
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI, Tailwind, Convex.
+
+## Key Principles
+
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Structure files as: exported component, subcomponents, helpers, static content, types.
+
+## Naming Conventions
+
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+- Use camelCase for file names.
+
+## TypeScript Usage
+
+- Use TypeScript for all code; prefer `type` aliases over interfaces.
+- Avoid enums; use maps or union types instead.
+- Use functional components with typed props.
+
+## Syntax and Formatting
+
+- Use the `function` keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+
+## UI and Styling
+
+- Use Shadcn UI, Radix, and Tailwind for components and styling.
+- Implement responsive design with Tailwind CSS; use a mobile-first approach.
+
+## Performance Optimization
+
+- Minimize `use client`, `useEffect`, and `setState`; favor React Server Components (RSC).
+- Wrap client components in `Suspense` with a fallback.
+- Use dynamic loading for non-critical components.
+- Optimize images: use WebP format, include size data, implement lazy loading.
+
+## Data Layer with Convex
+
+- Use **Convex** as the primary database and backend runtime.
+- Define queries and mutations in Convex functions, then consume them with `useQuery` and `useMutation` hooks on the client.
+- Keep Convex functions type-safe and colocated with related features.
+- Favor server-side Convex actions over API routes for data mutations.
+
+## File Uploads
+
+- Use \*Convex\*\* for file uploads.
+- Store metadata (URL, size, type) in Convex after a successful upload.
+
+## Key Conventions
+
+- Use Convex for all data fetching and mutations; avoid ad-hoc API routes.
+- Every user-facing text should be written in **English (US)**.
+- **Prefer Next.js Server Actions + Convex over API routes for server-side logic and data persistence.**
+
+## Server Actions vs API Routes
+
+- Use **Server Actions** for form submissions, data mutations, and server-side logic that integrates with Convex.
+- Reserve **API routes** only for external API integrations, webhooks, or cases requiring explicit HTTP methods.
+- Server Actions + Convex provide better type safety, automatic serialization, and progressive enhancement.

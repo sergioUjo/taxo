@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Taxo - Healthcare Referral Management System
+
+An intelligent system that streamlines the healthcare referral process by capturing referrals, extracting key information, verifying insurance eligibility, and scheduling patients automatically.
+
+## Features
+
+- **Multi-Source Referral Capture**: Accept referrals from secure email, web forms, EHR systems, fax, and portal uploads
+- **Document Processing**: Automatically extract patient information, insurance details, and medical requirements from uploaded documents
+- **Insurance Verification**: Check eligibility in real-time and flag missing information
+- **Case Management**: Track referral status with a comprehensive dashboard
+- **Automated Scheduling**: Schedule patients once eligibility is confirmed
+- **Notifications**: Notify all parties via email, SMS, and dashboard updates
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Database**: Convex
+- **File Uploads**: Uploadthing
+- **Styling**: Tailwind CSS, Shadcn UI
+- **UI Components**: Radix UI
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ installed
+- pnpm package manager
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd taxo
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Set up environment variables:
 
-## Learn More
+Create a `.env.local` file in the root directory with the following variables:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+# Convex
+NEXT_PUBLIC_CONVEX_URL=your_convex_url
+CONVEX_DEPLOYMENT=your_convex_deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Uploadthing
+UPLOADTHING_TOKEN=your_uploadthing_token
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Running the Application
 
-## Deploy on Vercel
+1. Start the Convex development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm convex dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. In a new terminal, start the Next.js development server:
+
+```bash
+pnpm dev
+```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Usage
+
+1. **Create a New Referral**:
+   - Navigate to "/new-referral" or click "Create New Referral" button
+   - Select the referral source
+   - Set priority level
+   - Add optional notes
+   - Upload referral documents (PDF, images, Word documents)
+
+2. **View Cases**:
+   - Navigate to "/cases" to see all referral cases
+   - Click on any case to view detailed information
+   - Track case status, documents, and activity logs
+
+## Project Structure
+
+```
+taxo/
+├── convex/           # Convex backend functions and schema
+├── src/
+│   ├── app/          # Next.js app router pages
+│   ├── components/   # React components
+│   └── lib/          # Utility functions and configurations
+├── public/           # Static assets
+└── package.json      # Project dependencies
+```
+
+## Next Steps
+
+This is the foundation for the referral management system. Future enhancements will include:
+
+- AI-powered document extraction using OpenAI
+- Insurance eligibility API integration
+- Automated scheduling system
+- Email/SMS notification system
+- Advanced case filtering and search
+- User authentication and role-based access control
+
+## License
+
+[Your License Here]

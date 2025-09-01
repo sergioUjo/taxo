@@ -1,0 +1,19 @@
+# PDF parsing
+pymupdf
+pymupdf4llm
+
+# OpenAI Agents SDK
+openai-agents
+openai
+
+# Data validation
+pydantic
+
+# Optional helpers
+rapidfuzz
+
+# FastAPI
+fastapi
+uvicorn
+
+dotenv
