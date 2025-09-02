@@ -15,7 +15,7 @@ venv:
 	$(PYTHON) -m venv $(VENV)
 
 install: venv
-	$(ACTIVATE) && pip install --upgrade pip && pip install -r requirements.txt
+	pip install --upgrade pip && pip install -r requirements.txt
 
 run:
 ifndef PDF
