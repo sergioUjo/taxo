@@ -7,7 +7,7 @@
     "convex": "convex dev",
     "build": "next build --turbopack",
     "start": "next start",
-    "fastapi-dev": "pip3 install -r requirements.txt && python3 -m uvicorn src.api.api:app --reload --port 8321",
+    "fastapi-dev": "pip3 install -r requirements.txt && python3 -m uvicorn src.api.index:app --reload --port 8321",
     "dev": "concurrently \"pnpm run next-dev\" \"pnpm run fastapi-dev\""
   },
   "dependencies": {
