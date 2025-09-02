@@ -17,6 +17,8 @@
     "@langchain/community": "^0.3.53",
     "@langchain/core": "0.3.72",
     "@langchain/openai": "0.6.9",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.26.2",
