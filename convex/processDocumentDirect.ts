@@ -1,7 +1,7 @@
-import { v } from "convex/values";
-import { api } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
-import { action } from "./_generated/server";
+import {v} from "convex/values";
+import {api} from "./_generated/api";
+import {Id} from "./_generated/dataModel";
+import {action} from "./_generated/server";
 
 // Call Next.js API endpoint (which redirects to FastAPI in development)
 async function extractPatientFromPDF(pdfUrl: string) {
@@ -62,8 +62,22 @@ export const processDocumentDirectly = action({
       }
 
       // Extract patient data directly
-      const patientData = await extractPatientFromPDF(documentUrl);
+      let patientData: {
+        name?: string;
+        email?: string;
+        phone?: string;
+        additionalData?: { name: string; value: string }[];
+      } =await extractPatientFromPDF(documentUrl);
 
+      if (!patientData.email){
+        delete patientData.email;
+      }
+      if (!patientData.phone){
+          delete patientData.phone
+      }
+      if (!patientData.name){
+          delete patientData.name;
+      }
       console.log("Extracted patient data:", patientData);
 
       const patientId: Id<"patients"> = await ctx.runMutation(

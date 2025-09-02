@@ -42,4 +42,7 @@ next-env.d.ts
 
 .idea
 
-.venv
+/.venv/**
+/.venv
+/.venv/
+.venv/**/*

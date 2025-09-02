@@ -3,7 +3,6 @@ import { v } from "convex/values";
 
 export default defineSchema({
   patients: defineTable({
-    // Core patient information (minimal required fields)
     name: v.optional(v.string()),
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
