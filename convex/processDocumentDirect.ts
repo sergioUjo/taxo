@@ -8,7 +8,7 @@ async function extractPatientFromPDF(pdfUrl: string) {
   console.log(`Extracting patient data from: ${pdfUrl}`);
 
   // Get the app URL from environment variables
-  const appUrl = process.env.APP_URL || "http://localhost:3000";
+  const appUrl = process.env.APP_URL;
   const apiEndpoint = `${appUrl}/api/process-pdf`;
 
   console.log(`Making request to: ${apiEndpoint}`);
