@@ -1,16 +1,13 @@
-import os
-from typing import List
-from pydantic import BaseModel
 from dotenv import load_dotenv
-from fastapi import FastAPI, Query
-from openai import OpenAI
-
-from typing import List, Optional
-from pydantic import BaseModel
-
-from agents import Agent, Runner, function_tool
 import pymupdf4llm
 import requests
+from agents import Agent, Runner
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from openai import OpenAI
+from pydantic import BaseModel
+from typing import List, Optional
+
 
 class ResultItem(BaseModel):
     label: str
