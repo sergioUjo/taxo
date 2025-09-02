@@ -1,17 +1,11 @@
-import asyncio, json, re
-from typing import Any, Dict, List, Optional, Tuple
-
-import fitz  # PyMuPDF
-from pydantic import BaseModel
-from agents import Runner, function_tool
+import asyncio
 import pymupdf4llm
-
-from taxo_agents.procedure import extract_procedure
+import re
 
 from taxo_agents.conditions import condition_check
-
 from taxo_agents.condtion_status import condition_status
-OPENAI_API_KEY="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"
+from taxo_agents.procedure import extract_procedure
+
 
 # --------------------------
 # 0) Canonicalization helpers
