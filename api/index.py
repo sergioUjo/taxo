@@ -1,10 +1,8 @@
-from dotenv import load_dotenv
 import pymupdf4llm
 import requests
 from agents import Agent, Runner
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from openai import OpenAI
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -49,9 +47,6 @@ patient_info_extractor = Agent(
 load_dotenv(".env.local")
 
 app = FastAPI()
-
-client = OpenAI(
-)
 
 
 class Request(BaseModel):
