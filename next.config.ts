@@ -1,12 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  rewrites: async()=> {
-    return [{
-        source: "/api/:path*",
-        destination:
-            "/api/",
-      }];
+  rewrites: async () => {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/',
+      },
+    ];
   },
 };
 

@@ -1,5 +1,6 @@
-import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { v } from 'convex/values';
+
+import { mutation, query } from './_generated/server';
 
 // Create a new patient
 export const createPatient = mutation({
@@ -21,7 +22,7 @@ export const createPatient = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const patientId = await ctx.db.insert("patients", {
+    const patientId = await ctx.db.insert('patients', {
       ...args,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -38,8 +39,8 @@ export const findPatientByEmail = query({
   },
   handler: async (ctx, args) => {
     const patient = await ctx.db
-      .query("patients")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .query('patients')
+      .withIndex('by_email', (q) => q.eq('email', args.email))
       .first();
 
     return patient;
@@ -52,8 +53,8 @@ export const findPatientByPhone = query({
   },
   handler: async (ctx, args) => {
     const patient = await ctx.db
-      .query("patients")
-      .withIndex("by_phone", (q) => q.eq("phone", args.phone))
+      .query('patients')
+      .withIndex('by_phone', (q) => q.eq('phone', args.phone))
       .first();
 
     return patient;
@@ -66,13 +67,13 @@ export const findPatientByMRN = query({
     medicalRecordNumber: v.string(),
   },
   handler: async (ctx, args) => {
-    const allPatients = await ctx.db.query("patients").collect();
+    const allPatients = await ctx.db.query('patients').collect();
 
     // Search through additionalData for medical record number
     const patient = allPatients.find((patient) =>
       patient.additionalData?.some(
         (data) =>
-          data.name.toLowerCase().includes("medical record") &&
+          data.name.toLowerCase().includes('medical record') &&
           data.value === args.medicalRecordNumber
       )
     );
@@ -88,8 +89,8 @@ export const searchPatientsByName = query({
   },
   handler: async (ctx, args) => {
     const allPatients = await ctx.db
-      .query("patients")
-      .withIndex("by_name")
+      .query('patients')
+      .withIndex('by_name')
       .collect();
 
     // Simple fuzzy search - in production you might want to use a more sophisticated search
@@ -121,26 +122,26 @@ export const findPotentialDuplicatePatients = query({
     // Check by email
     if (args.email) {
       const emailMatch = await ctx.db
-        .query("patients")
-        .withIndex("by_email", (q) => q.eq("email", args.email))
+        .query('patients')
+        .withIndex('by_email', (q) => q.eq('email', args.email))
         .first();
       if (emailMatch)
-        potentialMatches.push({ patient: emailMatch, matchType: "email" });
+        potentialMatches.push({ patient: emailMatch, matchType: 'email' });
     }
 
     // Check by phone
     if (args.phone) {
       const phoneMatch = await ctx.db
-        .query("patients")
-        .withIndex("by_phone", (q) => q.eq("phone", args.phone))
+        .query('patients')
+        .withIndex('by_phone', (q) => q.eq('phone', args.phone))
         .first();
       if (phoneMatch)
-        potentialMatches.push({ patient: phoneMatch, matchType: "phone" });
+        potentialMatches.push({ patient: phoneMatch, matchType: 'phone' });
     }
 
     // Check by name and additional data (like DOB)
     if (args.name && args.additionalDataToMatch) {
-      const allPatients = await ctx.db.query("patients").collect();
+      const allPatients = await ctx.db.query('patients').collect();
 
       for (const patient of allPatients) {
         if (patient.name === args.name) {
@@ -158,7 +159,7 @@ export const findPotentialDuplicatePatients = query({
           if (hasMatchingData) {
             potentialMatches.push({
               patient,
-              matchType: "name_and_additional_data",
+              matchType: 'name_and_additional_data',
             });
           }
         }
@@ -178,7 +179,7 @@ export const findPotentialDuplicatePatients = query({
 // Update patient information
 export const updatePatient = mutation({
   args: {
-    patientId: v.id("patients"),
+    patientId: v.id('patients'),
     updates: v.object({
       name: v.optional(v.string()),
       email: v.optional(v.string()),
@@ -208,7 +209,7 @@ export const updatePatient = mutation({
 // Add or update specific additional data for a patient
 export const updatePatientAdditionalData = mutation({
   args: {
-    patientId: v.id("patients"),
+    patientId: v.id('patients'),
     dataToAdd: v.array(
       v.object({
         name: v.string(),
@@ -223,13 +224,13 @@ export const updatePatientAdditionalData = mutation({
   handler: async (ctx, args) => {
     const patient = await ctx.db.get(args.patientId);
     if (!patient) {
-      throw new Error("Patient not found");
+      throw new Error('Patient not found');
     }
 
     let newAdditionalData = args.dataToAdd;
-    const strategy = args.mergeStrategy || "merge";
+    const strategy = args.mergeStrategy || 'merge';
 
-    if (strategy === "merge" && patient.additionalData) {
+    if (strategy === 'merge' && patient.additionalData) {
       // Merge strategy: update existing fields, add new ones
       const existingData = patient.additionalData;
       const updatedData = [...existingData];
@@ -257,7 +258,7 @@ export const updatePatientAdditionalData = mutation({
       });
 
       newAdditionalData = updatedData;
-    } else if (strategy === "append" && patient.additionalData) {
+    } else if (strategy === 'append' && patient.additionalData) {
       // Append strategy: add all new data to existing
       newAdditionalData = [
         ...patient.additionalData,
@@ -279,7 +280,7 @@ export const updatePatientAdditionalData = mutation({
 // Get patient by ID
 export const getPatient = query({
   args: {
-    patientId: v.id("patients"),
+    patientId: v.id('patients'),
   },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.patientId);
@@ -291,9 +292,9 @@ export const getAllPatients = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db
-      .query("patients")
-      .withIndex("by_created")
-      .order("desc")
+      .query('patients')
+      .withIndex('by_created')
+      .order('desc')
       .collect();
   },
 });
@@ -301,16 +302,16 @@ export const getAllPatients = query({
 // Get patient with their cases
 export const getPatientWithCases = query({
   args: {
-    patientId: v.id("patients"),
+    patientId: v.id('patients'),
   },
   handler: async (ctx, args) => {
     const patient = await ctx.db.get(args.patientId);
     if (!patient) return null;
 
     const cases = await ctx.db
-      .query("cases")
-      .withIndex("by_patient", (q) => q.eq("patientId", args.patientId))
-      .order("desc")
+      .query('cases')
+      .withIndex('by_patient', (q) => q.eq('patientId', args.patientId))
+      .order('desc')
       .collect();
 
     return {

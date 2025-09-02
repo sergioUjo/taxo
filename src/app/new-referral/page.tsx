@@ -1,8 +1,8 @@
-import { NewReferralForm } from "@/components/new-referral-form";
+import { NewReferralForm } from '@/components/new-referral-form';
 
 export default function NewReferralPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className='container mx-auto px-4 py-8'>
       <NewReferralForm />
     </div>
   );

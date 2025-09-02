@@ -1,15 +1,17 @@
-"use client";
+'use client';
 
-import { useState, useRef } from "react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Button } from "./button";
-import { Card, CardContent } from "./card";
-import { Upload, FileText, X, AlertCircle } from "lucide-react";
-import type { Id } from "../../../convex/_generated/dataModel";
+import { useRef, useState } from 'react';
+
+import { useMutation } from 'convex/react';
+import { AlertCircle, FileText, Upload, X } from 'lucide-react';
+
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
+import { Button } from './button';
+import { Card, CardContent } from './card';
 
 type UploadedFile = {
-  storageId: Id<"_storage">;
+  storageId: Id<'_storage'>;
   fileName: string;
   fileSize: number;
   fileType: string;
@@ -30,12 +32,12 @@ export function FileUpload({
   maxFiles = 10,
   maxFileSize = 16,
   acceptedTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ],
   disabled = false,
 }: FileUploadProps) {
@@ -87,8 +89,8 @@ export function FileUpload({
 
           // Upload file to Convex storage
           const result = await fetch(uploadUrl, {
-            method: "POST",
-            headers: { "Content-Type": file.type },
+            method: 'POST',
+            headers: { 'Content-Type': file.type },
             body: file,
           });
 
@@ -114,8 +116,8 @@ export function FileUpload({
       setUploadedFiles(allUploadedFiles);
       onFilesUploaded(allUploadedFiles);
     } catch (error) {
-      console.error("Upload error:", error);
-      onUploadError?.("Upload failed. Please try again.");
+      console.error('Upload error:', error);
+      onUploadError?.('Upload failed. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -130,9 +132,9 @@ export function FileUpload({
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -158,44 +160,44 @@ export function FileUpload({
   };
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <Card
         className={`transition-colors ${
           dragActive
-            ? "border-primary bg-primary/5"
-            : "border-dashed border-muted-foreground/25"
-        } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-primary/50"}`}
+            ? 'border-primary bg-primary/5'
+            : 'border-muted-foreground/25 border-dashed'
+        } ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-primary/50 cursor-pointer'}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={handleClick}
       >
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-muted rounded-full">
+        <CardContent className='p-8'>
+          <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+            <div className='bg-muted flex h-12 w-12 items-center justify-center rounded-full'>
               {isUploading ? (
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className='border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent' />
               ) : (
-                <Upload className="w-6 h-6 text-muted-foreground" />
+                <Upload className='text-muted-foreground h-6 w-6' />
               )}
             </div>
 
             <div>
-              <p className="text-lg font-medium">
-                {isUploading ? "Uploading..." : "Choose files or drag and drop"}
+              <p className='text-lg font-medium'>
+                {isUploading ? 'Uploading...' : 'Choose files or drag and drop'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-muted-foreground text-sm'>
                 PDF, Word, or Image files up to {maxFileSize}MB each
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className='text-muted-foreground mt-1 text-xs'>
                 Maximum {maxFiles} files
               </p>
             </div>
 
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               disabled={disabled || isUploading}
               onClick={(e) => {
                 e.stopPropagation();
@@ -210,46 +212,46 @@ export function FileUpload({
 
       <input
         ref={fileInputRef}
-        type="file"
+        type='file'
         multiple
-        accept={acceptedTypes.join(",")}
+        accept={acceptedTypes.join(',')}
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
-        className="hidden"
+        className='hidden'
         disabled={disabled}
       />
 
       {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
+        <div className='space-y-2'>
+          <p className='text-sm font-medium'>
             Uploaded Files ({uploadedFiles.length})
           </p>
-          <div className="space-y-2">
+          <div className='space-y-2'>
             {uploadedFiles.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
+                className='bg-muted/20 flex items-center justify-between rounded-md border p-3'
               >
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
+                <div className='flex items-center space-x-3'>
+                  <FileText className='text-muted-foreground h-4 w-4 flex-shrink-0' />
+                  <div className='min-w-0'>
+                    <p className='truncate text-sm font-medium'>
                       {file.fileName}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className='text-muted-foreground text-xs'>
                       {formatFileSize(file.fileSize)} MB
                     </p>
                   </div>
                 </div>
 
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
+                  type='button'
+                  variant='ghost'
+                  size='sm'
                   onClick={() => removeFile(index)}
                   disabled={disabled}
-                  className="flex-shrink-0 h-8 w-8 p-0"
+                  className='h-8 w-8 flex-shrink-0 p-0'
                 >
-                  <X className="h-4 w-4" />
+                  <X className='h-4 w-4' />
                 </Button>
               </div>
             ))}

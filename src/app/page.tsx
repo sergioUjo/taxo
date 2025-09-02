@@ -1,35 +1,37 @@
-import Link from "next/link";
+import Link from 'next/link';
+
+import {
+  Activity,
+  Bell,
+  Calendar,
+  CheckCircle,
+  FileText,
+  Inbox,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  FileText,
-  Inbox,
-  CheckCircle,
-  Calendar,
-  Bell,
-  Activity,
-} from "lucide-react";
+} from '@/components/ui/card';
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className='min-h-screen'>
       {/* Navigation */}
-      <nav className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Taxo</h1>
-            <div className="flex gap-4">
-              <Link href="/new-referral">
-                <Button variant="ghost">New Referral</Button>
+      <nav className='border-b'>
+        <div className='container mx-auto px-4 py-4'>
+          <div className='flex items-center justify-between'>
+            <h1 className='text-2xl font-bold'>Taxo</h1>
+            <div className='flex gap-4'>
+              <Link href='/new-referral'>
+                <Button variant='ghost'>New Referral</Button>
               </Link>
-              <Link href="/cases">
-                <Button variant="ghost">Cases</Button>
+              <Link href='/cases'>
+                <Button variant='ghost'>Cases</Button>
               </Link>
             </div>
           </div>
@@ -37,22 +39,22 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-5xl font-bold mb-6">
+      <section className='container mx-auto px-4 py-16'>
+        <div className='mx-auto max-w-3xl text-center'>
+          <h2 className='mb-6 text-5xl font-bold'>
             Streamline Your Healthcare Referral Process
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className='text-muted-foreground mb-8 text-xl'>
             An intelligent system that captures referrals, extracts key
             information, verifies insurance eligibility, and schedules patients
             automatically.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/new-referral">
-              <Button size="lg">Create New Referral</Button>
+          <div className='flex justify-center gap-4'>
+            <Link href='/new-referral'>
+              <Button size='lg'>Create New Referral</Button>
             </Link>
-            <Link href="/cases">
-              <Button size="lg" variant="outline">
+            <Link href='/cases'>
+              <Button size='lg' variant='outline'>
                 View Cases
               </Button>
             </Link>
@@ -61,12 +63,12 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h3 className="text-3xl font-bold text-center mb-12">How It Works</h3>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className='container mx-auto px-4 py-16'>
+        <h3 className='mb-12 text-center text-3xl font-bold'>How It Works</h3>
+        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
           <Card>
             <CardHeader>
-              <Inbox className="h-10 w-10 mb-4 text-primary" />
+              <Inbox className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Capture Referrals</CardTitle>
               <CardDescription>
                 Accept referrals from multiple sources including secure email,
@@ -77,7 +79,7 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <FileText className="h-10 w-10 mb-4 text-primary" />
+              <FileText className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Extract Information</CardTitle>
               <CardDescription>
                 Automatically read documents and extract key patient
@@ -88,7 +90,7 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <CheckCircle className="h-10 w-10 mb-4 text-primary" />
+              <CheckCircle className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Verify Eligibility</CardTitle>
               <CardDescription>
                 Check insurance eligibility in real-time and flag any missing
@@ -99,7 +101,7 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <Activity className="h-10 w-10 mb-4 text-primary" />
+              <Activity className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Track Status</CardTitle>
               <CardDescription>
                 Monitor case progress with a comprehensive dashboard showing all
@@ -110,7 +112,7 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <Calendar className="h-10 w-10 mb-4 text-primary" />
+              <Calendar className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Schedule Patients</CardTitle>
               <CardDescription>
                 Once eligibility is confirmed, automatically schedule patients
@@ -121,7 +123,7 @@ export default function Home() {
 
           <Card>
             <CardHeader>
-              <Bell className="h-10 w-10 mb-4 text-primary" />
+              <Bell className='text-primary mb-4 h-10 w-10' />
               <CardTitle>Notify Parties</CardTitle>
               <CardDescription>
                 Send notifications to all involved parties via email, SMS, and
@@ -133,17 +135,17 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16">
-        <Card className="bg-primary text-primary-foreground">
-          <CardContent className="text-center py-12">
-            <h3 className="text-3xl font-bold mb-4">
+      <section className='container mx-auto px-4 py-16'>
+        <Card className='bg-primary text-primary-foreground'>
+          <CardContent className='py-12 text-center'>
+            <h3 className='mb-4 text-3xl font-bold'>
               Ready to Streamline Your Referral Process?
             </h3>
-            <p className="text-lg mb-8 opacity-90">
+            <p className='mb-8 text-lg opacity-90'>
               Start capturing and processing referrals more efficiently today.
             </p>
-            <Link href="/new-referral">
-              <Button size="lg" variant="secondary">
+            <Link href='/new-referral'>
+              <Button size='lg' variant='secondary'>
                 Get Started
               </Button>
             </Link>

@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
 
 export default defineSchema({
   patients: defineTable({
@@ -25,10 +25,10 @@ export default defineSchema({
     updatedAt: v.string(),
     notes: v.optional(v.string()),
   })
-    .index("by_email", ["email"])
-    .index("by_phone", ["phone"])
-    .index("by_name", ["name"])
-    .index("by_created", ["createdAt"]),
+    .index('by_email', ['email'])
+    .index('by_phone', ['phone'])
+    .index('by_name', ['name'])
+    .index('by_created', ['createdAt']),
 
   cases: defineTable({
     // Basic case information
@@ -37,7 +37,7 @@ export default defineSchema({
     priority: v.optional(v.string()), // low, medium, high, urgent
 
     // Patient reference
-    patientId: v.optional(v.id("patients")),
+    patientId: v.optional(v.id('patients')),
 
     // Case-specific information
     eligibilityStatus: v.optional(v.string()), // pending, eligible, not-eligible, needs-review
@@ -52,31 +52,31 @@ export default defineSchema({
     updatedAt: v.string(),
     notes: v.optional(v.string()),
   })
-    .index("by_status", ["status"])
-    .index("by_patient", ["patientId"])
-    .index("by_created", ["createdAt"]),
+    .index('by_status', ['status'])
+    .index('by_patient', ['patientId'])
+    .index('by_created', ['createdAt']),
 
   documents: defineTable({
-    caseId: v.id("cases"),
+    caseId: v.id('cases'),
     fileName: v.string(),
     fileUrl: v.optional(v.string()), // Keep for backward compatibility
-    storageId: v.optional(v.id("_storage")), // Convex storage ID
+    storageId: v.optional(v.id('_storage')), // Convex storage ID
     fileType: v.string(),
     fileSize: v.number(),
     uploadedAt: v.string(),
     extractedData: v.optional(v.any()), // JSON data extracted from document
     status: v.string(), // uploaded, processing, processed, failed
   })
-    .index("by_case", ["caseId"])
-    .index("by_status", ["status"]),
+    .index('by_case', ['caseId'])
+    .index('by_status', ['status']),
 
   activityLogs: defineTable({
-    caseId: v.id("cases"),
+    caseId: v.id('cases'),
     action: v.string(),
     details: v.optional(v.string()),
     performedBy: v.string(), // system, user email, or agent
     timestamp: v.string(),
   })
-    .index("by_case", ["caseId"])
-    .index("by_timestamp", ["timestamp"]),
+    .index('by_case', ['caseId'])
+    .index('by_timestamp', ['timestamp']),
 });

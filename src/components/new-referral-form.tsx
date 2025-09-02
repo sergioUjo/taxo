@@ -1,24 +1,28 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { useMutation } from 'convex/react';
+import { CheckCircle } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { FileUpload } from "@/components/ui/file-upload";
-import { Label } from "@/components/ui/label";
-import { useMutation } from "convex/react";
-import { CheckCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { api } from "../../convex/_generated/api";
-import type { Id } from "../../convex/_generated/dataModel";
+} from '@/components/ui/card';
+import { FileUpload } from '@/components/ui/file-upload';
+import { Label } from '@/components/ui/label';
+
+import { api } from '../../convex/_generated/api';
+import type { Id } from '../../convex/_generated/dataModel';
 
 type UploadedFile = {
-  storageId: Id<"_storage">;
+  storageId: Id<'_storage'>;
   fileName: string;
   fileSize: number;
   fileType: string;
@@ -28,8 +32,8 @@ export function NewReferralForm() {
   const router = useRouter();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdCaseId, setCreatedCaseId] = useState<Id<"cases"> | null>(null);
-  const [uploadError, setUploadError] = useState<string>("");
+  const [createdCaseId, setCreatedCaseId] = useState<Id<'cases'> | null>(null);
+  const [uploadError, setUploadError] = useState<string>('');
 
   const createCaseWithPatientProcessing = useMutation(
     api.cases.createCaseWithPatientProcessing
@@ -44,7 +48,7 @@ export function NewReferralForm() {
     try {
       // Create the case (patient processing will happen in the background via agents)
       const result = await createCaseWithPatientProcessing({
-        referralSource: "web-form",
+        referralSource: 'web-form',
       });
 
       const caseId = result.caseId;
@@ -65,24 +69,24 @@ export function NewReferralForm() {
       setCreatedCaseId(caseId);
       // Navigate to cases dashboard after a short delay
       setTimeout(() => {
-        router.push("/cases");
+        router.push('/cases');
       }, 2000);
     } catch (error) {
-      console.error("Error creating case:", error);
+      console.error('Error creating case:', error);
       setIsSubmitting(false);
     }
   };
 
   if (createdCaseId) {
     return (
-      <Card className="max-w-2xl mx-auto">
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center space-y-4 py-8">
-            <CheckCircle className="h-16 w-16 text-green-500" />
-            <h3 className="text-2xl font-semibold">
+      <Card className='mx-auto max-w-2xl'>
+        <CardContent className='pt-6'>
+          <div className='flex flex-col items-center space-y-4 py-8'>
+            <CheckCircle className='h-16 w-16 text-green-500' />
+            <h3 className='text-2xl font-semibold'>
               Case Created Successfully!
             </h3>
-            <p className="text-muted-foreground">
+            <p className='text-muted-foreground'>
               Patient information will be extracted from your documents
               automatically. Redirecting to cases dashboard...
             </p>
@@ -93,15 +97,15 @@ export function NewReferralForm() {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className='mx-auto max-w-2xl'>
       <CardHeader>
         <CardTitle>Create New Referral Case</CardTitle>
         <CardDescription>
           Upload referral documents and create a new case for processing
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
+      <CardContent className='space-y-6'>
+        <div className='space-y-2'>
           <Label>Upload Documents</Label>
           <FileUpload
             onFilesUploaded={setUploadedFiles}
@@ -109,16 +113,16 @@ export function NewReferralForm() {
             disabled={isSubmitting}
           />
           {uploadError && (
-            <p className="text-sm text-destructive">{uploadError}</p>
+            <p className='text-destructive text-sm'>{uploadError}</p>
           )}
         </div>
 
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || uploadedFiles.length === 0}
-          className="w-full"
+          className='w-full'
         >
-          {isSubmitting ? "Creating Case..." : "Create Case"}
+          {isSubmitting ? 'Creating Case...' : 'Create Case'}
         </Button>
       </CardContent>
     </Card>

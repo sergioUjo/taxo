@@ -8,7 +8,10 @@
     "build": "next build --turbopack",
     "start": "next start",
     "fastapi-dev": "pip3 install -r requirements.txt && python3 -m uvicorn api.index:app --reload --port 8321",
-    "dev": "concurrently \"pnpm run next-dev\" \"pnpm run fastapi-dev\""
+    "dev": "concurrently \"pnpm run next-dev\" \"pnpm run fastapi-dev\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check . && next lint"
   },
   "dependencies": {
     "@langchain/community": "^0.3.53",
@@ -34,10 +37,13 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-toast": "^1.2.15",
     "@tailwindcss/postcss": "^4",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
-    "concurrently": "^9.1.0",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"
