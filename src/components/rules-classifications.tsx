@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { useMutation, useQuery } from 'convex/react';
 import {
   ChevronDown,
   ChevronRight,
@@ -14,101 +15,23 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+
+import { api } from '../../convex/_generated/api';
+import type { Doc } from '../../convex/_generated/dataModel';
 
 type ViewType = 'specialties' | 'rules';
-
-// Temporary mock data until we implement the Convex queries
-const mockSpecialties = [
-  {
-    id: '1',
-    name: 'Ophthalmology',
-    description: 'Eye care and vision-related procedures',
-    treatmentTypes: [
-      {
-        id: '1-1',
-        name: 'Consultation',
-        description: 'Initial patient consultations and evaluations',
-        procedures: [
-          {
-            id: '1-1-1',
-            name: 'Comprehensive Eye Exam',
-            description: 'Complete eye examination including vision testing',
-          },
-          {
-            id: '1-1-2',
-            name: 'Retinal Screening',
-            description: 'Screening for retinal diseases and disorders',
-          },
-        ],
-      },
-      {
-        id: '1-2',
-        name: 'Procedure or Surgery',
-        description: 'Surgical procedures and interventions',
-        procedures: [
-          {
-            id: '1-2-1',
-            name: 'Trabeculectomy',
-            description: 'Glaucoma surgery to reduce eye pressure',
-          },
-          {
-            id: '1-2-2',
-            name: 'Cataract Surgery',
-            description: 'Removal of clouded lens from the eye',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Cardiology',
-    description: 'Heart and cardiovascular system care',
-    treatmentTypes: [
-      {
-        id: '2-1',
-        name: 'Diagnostics',
-        description: 'Diagnostic tests and procedures',
-        procedures: [
-          {
-            id: '2-1-1',
-            name: 'Echocardiogram',
-            description: 'Ultrasound of the heart',
-          },
-          {
-            id: '2-1-2',
-            name: 'Stress Test',
-            description: 'Exercise stress testing for heart function',
-          },
-        ],
-      },
-    ],
-  },
-];
-
-const mockRules = [
-  {
-    id: '1',
-    title: 'Prior Authorization Required',
-    description:
-      'All surgical procedures require prior authorization from insurance',
-    ruleType: 'approval',
-    priority: 'high',
-    specialty: 'Ophthalmology',
-    treatmentType: 'Procedure or Surgery',
-    procedure: null,
-  },
-  {
-    id: '2',
-    title: 'Referral Letter Required',
-    description: 'Specialist consultation requires referral from primary care',
-    ruleType: 'documentation',
-    priority: 'medium',
-    specialty: 'Cardiology',
-    treatmentType: 'Consultation',
-    procedure: null,
-  },
-];
 
 const getRulePriorityColor = (priority: string) => {
   switch (priority) {
@@ -142,6 +65,86 @@ const getRuleTypeColor = (type: string) => {
   }
 };
 
+function AddSpecialtyDialog() {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  const createSpecialty = useMutation(api.classifications.createSpecialty);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await createSpecialty({
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
+
+      // Reset form and close dialog
+      setName('');
+      setDescription('');
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to create specialty:', error);
+      // TODO: Add proper error handling with toast notifications
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button>
+          <Plus className='mr-2 h-4 w-4' />
+          Add New
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add New Specialty</SheetTitle>
+          <SheetDescription>
+            Create a new medical specialty with its description.
+          </SheetDescription>
+        </SheetHeader>
+        <form onSubmit={handleSubmit} className='space-y-4 py-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='name'>Specialty Name</Label>
+            <Input
+              id='name'
+              placeholder='Enter specialty name...'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='description'>Description</Label>
+            <Textarea
+              id='description'
+              placeholder='Enter specialty description...'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+        </form>
+        <SheetFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button type='submit' onClick={handleSubmit} disabled={!name.trim()}>
+            Create Specialty
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export function RulesClassifications() {
   const [activeView, setActiveView] = useState<ViewType>('specialties');
   const [expandedSpecialties, setExpandedSpecialties] = useState<Set<string>>(
@@ -150,6 +153,10 @@ export function RulesClassifications() {
   const [expandedTreatmentTypes, setExpandedTreatmentTypes] = useState<
     Set<string>
   >(new Set());
+
+  // Fetch data from Convex
+  const specialties = useQuery(api.classifications.getSpecialtiesWithHierarchy);
+  const rules = useQuery(api.classifications.getRules, {});
 
   const toggleSpecialty = (id: string) => {
     const newExpanded = new Set(expandedSpecialties);
@@ -183,10 +190,7 @@ export function RulesClassifications() {
             business rules
           </p>
         </div>
-        <Button>
-          <Plus className='mr-2 h-4 w-4' />
-          Add New
-        </Button>
+        <AddSpecialtyDialog />
       </div>
 
       <div className='flex space-x-2 border-b'>
@@ -214,172 +218,217 @@ export function RulesClassifications() {
 
       {activeView === 'specialties' && (
         <div className='space-y-4'>
-          {mockSpecialties.map((specialty) => (
-            <Card key={specialty.id}>
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center space-x-3'>
-                    <button
-                      onClick={() => toggleSpecialty(specialty.id)}
-                      className='rounded p-1 hover:bg-gray-100'
-                    >
-                      {expandedSpecialties.has(specialty.id) ? (
-                        <ChevronDown className='h-4 w-4' />
-                      ) : (
-                        <ChevronRight className='h-4 w-4' />
-                      )}
-                    </button>
-                    <div>
-                      <CardTitle className='text-xl'>
-                        {specialty.name}
-                      </CardTitle>
-                      {specialty.description && (
-                        <p className='text-muted-foreground mt-1 text-sm'>
-                          {specialty.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className='flex items-center space-x-2'>
-                    <Button variant='ghost' size='sm'>
-                      <Edit className='h-4 w-4' />
-                    </Button>
-                    <Button variant='ghost' size='sm'>
-                      <Trash2 className='h-4 w-4' />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-
-              {expandedSpecialties.has(specialty.id) && (
-                <CardContent>
-                  <div className='ml-6 space-y-3'>
-                    {specialty.treatmentTypes.map((treatmentType) => (
-                      <div key={treatmentType.id} className='border-l-2 pl-4'>
-                        <div className='flex items-center justify-between'>
-                          <div className='flex items-center space-x-3'>
-                            <button
-                              onClick={() =>
-                                toggleTreatmentType(treatmentType.id)
-                              }
-                              className='rounded p-1 hover:bg-gray-100'
-                            >
-                              {expandedTreatmentTypes.has(treatmentType.id) ? (
-                                <ChevronDown className='h-3 w-3' />
-                              ) : (
-                                <ChevronRight className='h-3 w-3' />
-                              )}
-                            </button>
-                            <div>
-                              <h4 className='font-medium'>
-                                {treatmentType.name}
-                              </h4>
-                              {treatmentType.description && (
-                                <p className='text-muted-foreground text-xs'>
-                                  {treatmentType.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className='flex items-center space-x-1'>
-                            <Button variant='ghost' size='sm'>
-                              <Edit className='h-3 w-3' />
-                            </Button>
-                            <Button variant='ghost' size='sm'>
-                              <Trash2 className='h-3 w-3' />
-                            </Button>
-                          </div>
+          {!specialties ? (
+            <div className='py-8 text-center'>
+              <p className='text-muted-foreground'>Loading specialties...</p>
+            </div>
+          ) : specialties.length === 0 ? (
+            <div className='py-8 text-center'>
+              <p className='text-muted-foreground'>No specialties found.</p>
+              <p className='text-muted-foreground mt-2 text-sm'>
+                Create your first specialty to get started.
+              </p>
+            </div>
+          ) : (
+            specialties.map(
+              (specialty: Doc<'specialties'> & { treatmentTypes: any[] }) => (
+                <Card key={specialty._id}>
+                  <CardHeader>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center space-x-3'>
+                        <button
+                          onClick={() => toggleSpecialty(specialty._id)}
+                          className='rounded p-1 hover:bg-gray-100'
+                        >
+                          {expandedSpecialties.has(specialty._id) ? (
+                            <ChevronDown className='h-4 w-4' />
+                          ) : (
+                            <ChevronRight className='h-4 w-4' />
+                          )}
+                        </button>
+                        <div>
+                          <CardTitle className='text-xl'>
+                            {specialty.name}
+                          </CardTitle>
+                          {specialty.description && (
+                            <p className='text-muted-foreground mt-1 text-sm'>
+                              {specialty.description}
+                            </p>
+                          )}
                         </div>
+                      </div>
+                      <div className='flex items-center space-x-2'>
+                        <Button variant='ghost' size='sm'>
+                          <Edit className='h-4 w-4' />
+                        </Button>
+                        <Button variant='ghost' size='sm'>
+                          <Trash2 className='h-4 w-4' />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
 
-                        {expandedTreatmentTypes.has(treatmentType.id) && (
-                          <div className='mt-2 ml-6 space-y-2'>
-                            {treatmentType.procedures.map((procedure) => (
-                              <div
-                                key={procedure.id}
-                                className='border-l py-1 pl-3'
-                              >
-                                <div className='flex items-center justify-between'>
+                  {expandedSpecialties.has(specialty._id) && (
+                    <CardContent>
+                      <div className='ml-6 space-y-3'>
+                        {specialty.treatmentTypes.map(
+                          (
+                            treatmentType: Doc<'treatmentTypes'> & {
+                              procedures: any[];
+                            }
+                          ) => (
+                            <div
+                              key={treatmentType._id}
+                              className='border-l-2 pl-4'
+                            >
+                              <div className='flex items-center justify-between'>
+                                <div className='flex items-center space-x-3'>
+                                  <button
+                                    onClick={() =>
+                                      toggleTreatmentType(treatmentType._id)
+                                    }
+                                    className='rounded p-1 hover:bg-gray-100'
+                                  >
+                                    {expandedTreatmentTypes.has(
+                                      treatmentType._id
+                                    ) ? (
+                                      <ChevronDown className='h-3 w-3' />
+                                    ) : (
+                                      <ChevronRight className='h-3 w-3' />
+                                    )}
+                                  </button>
                                   <div>
-                                    <h5 className='text-sm font-medium'>
-                                      {procedure.name}
-                                    </h5>
-                                    {procedure.description && (
+                                    <h4 className='font-medium'>
+                                      {treatmentType.name}
+                                    </h4>
+                                    {treatmentType.description && (
                                       <p className='text-muted-foreground text-xs'>
-                                        {procedure.description}
+                                        {treatmentType.description}
                                       </p>
                                     )}
                                   </div>
-                                  <div className='flex items-center space-x-1'>
-                                    <Button variant='ghost' size='sm'>
-                                      <Edit className='h-3 w-3' />
-                                    </Button>
-                                    <Button variant='ghost' size='sm'>
-                                      <Trash2 className='h-3 w-3' />
-                                    </Button>
-                                  </div>
+                                </div>
+                                <div className='flex items-center space-x-1'>
+                                  <Button variant='ghost' size='sm'>
+                                    <Edit className='h-3 w-3' />
+                                  </Button>
+                                  <Button variant='ghost' size='sm'>
+                                    <Trash2 className='h-3 w-3' />
+                                  </Button>
                                 </div>
                               </div>
-                            ))}
-                            <Button variant='ghost' size='sm' className='ml-3'>
-                              <Plus className='mr-1 h-3 w-3' />
-                              Add Procedure
-                            </Button>
-                          </div>
+
+                              {expandedTreatmentTypes.has(
+                                treatmentType._id
+                              ) && (
+                                <div className='mt-2 ml-6 space-y-2'>
+                                  {treatmentType.procedures.map(
+                                    (procedure: Doc<'procedures'>) => (
+                                      <div
+                                        key={procedure._id}
+                                        className='border-l py-1 pl-3'
+                                      >
+                                        <div className='flex items-center justify-between'>
+                                          <div>
+                                            <h5 className='text-sm font-medium'>
+                                              {procedure.name}
+                                            </h5>
+                                            {procedure.description && (
+                                              <p className='text-muted-foreground text-xs'>
+                                                {procedure.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                          <div className='flex items-center space-x-1'>
+                                            <Button variant='ghost' size='sm'>
+                                              <Edit className='h-3 w-3' />
+                                            </Button>
+                                            <Button variant='ghost' size='sm'>
+                                              <Trash2 className='h-3 w-3' />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+                                  <Button
+                                    variant='ghost'
+                                    size='sm'
+                                    className='ml-3'
+                                  >
+                                    <Plus className='mr-1 h-3 w-3' />
+                                    Add Procedure
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )
                         )}
+                        <Button variant='ghost' size='sm' className='ml-6'>
+                          <Plus className='mr-1 h-3 w-3' />
+                          Add Treatment Type
+                        </Button>
                       </div>
-                    ))}
-                    <Button variant='ghost' size='sm' className='ml-6'>
-                      <Plus className='mr-1 h-3 w-3' />
-                      Add Treatment Type
-                    </Button>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          ))}
+                    </CardContent>
+                  )}
+                </Card>
+              )
+            )
+          )}
         </div>
       )}
 
       {activeView === 'rules' && (
         <div className='space-y-4'>
-          {mockRules.map((rule) => (
-            <Card key={rule.id}>
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <div>
-                    <CardTitle className='text-lg'>{rule.title}</CardTitle>
-                    <p className='text-muted-foreground mt-1 text-sm'>
-                      {rule.description}
-                    </p>
-                    <div className='mt-3 flex items-center space-x-2'>
-                      <Badge className={getRuleTypeColor(rule.ruleType)}>
-                        {rule.ruleType}
-                      </Badge>
-                      <Badge className={getRulePriorityColor(rule.priority)}>
-                        {rule.priority}
-                      </Badge>
-                      <Badge variant='outline'>
-                        {rule.specialty}
-                        {rule.treatmentType && ` → ${rule.treatmentType}`}
-                        {rule.procedure && ` → ${rule.procedure}`}
-                      </Badge>
+          {!rules ? (
+            <div className='py-8 text-center'>
+              <p className='text-muted-foreground'>Loading rules...</p>
+            </div>
+          ) : rules.length === 0 ? (
+            <div className='py-8 text-center'>
+              <p className='text-muted-foreground'>No rules found.</p>
+              <p className='text-muted-foreground mt-2 text-sm'>
+                Create rules to automate your workflow processes.
+              </p>
+            </div>
+          ) : (
+            rules.map((rule: Doc<'rules'>) => (
+              <Card key={rule._id}>
+                <CardHeader>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <CardTitle className='text-lg'>{rule.title}</CardTitle>
+                      <p className='text-muted-foreground mt-1 text-sm'>
+                        {rule.description}
+                      </p>
+                      <div className='mt-3 flex items-center space-x-2'>
+                        <Badge className={getRuleTypeColor(rule.ruleType)}>
+                          {rule.ruleType}
+                        </Badge>
+                        <Badge className={getRulePriorityColor(rule.priority)}>
+                          {rule.priority}
+                        </Badge>
+                        {rule.specialtyId && (
+                          <Badge variant='outline'>Specialty Rule</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className='flex items-center space-x-2'>
+                      <Button variant='ghost' size='sm'>
+                        <Settings className='h-4 w-4' />
+                      </Button>
+                      <Button variant='ghost' size='sm'>
+                        <Edit className='h-4 w-4' />
+                      </Button>
+                      <Button variant='ghost' size='sm'>
+                        <Trash2 className='h-4 w-4' />
+                      </Button>
                     </div>
                   </div>
-                  <div className='flex items-center space-x-2'>
-                    <Button variant='ghost' size='sm'>
-                      <Settings className='h-4 w-4' />
-                    </Button>
-                    <Button variant='ghost' size='sm'>
-                      <Edit className='h-4 w-4' />
-                    </Button>
-                    <Button variant='ghost' size='sm'>
-                      <Trash2 className='h-4 w-4' />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+                </CardHeader>
+              </Card>
+            ))
+          )}
         </div>
       )}
     </div>

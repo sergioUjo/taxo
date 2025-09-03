@@ -1,5 +1,41 @@
 import { mutation } from './_generated/server';
 
+export const clearDatabase = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Clear all tables in reverse dependency order
+    const rules = await ctx.db.query('rules').collect();
+    for (const rule of rules) {
+      await ctx.db.delete(rule._id);
+    }
+
+    const procedures = await ctx.db.query('procedures').collect();
+    for (const procedure of procedures) {
+      await ctx.db.delete(procedure._id);
+    }
+
+    const treatmentTypes = await ctx.db.query('treatmentTypes').collect();
+    for (const treatmentType of treatmentTypes) {
+      await ctx.db.delete(treatmentType._id);
+    }
+
+    const specialties = await ctx.db.query('specialties').collect();
+    for (const specialty of specialties) {
+      await ctx.db.delete(specialty._id);
+    }
+
+    return {
+      message: 'Database cleared successfully',
+      deleted: {
+        specialties: specialties.length,
+        treatmentTypes: treatmentTypes.length,
+        procedures: procedures.length,
+        rules: rules.length,
+      },
+    };
+  },
+});
+
 export const seedClassifications = mutation({
   args: {},
   handler: async (ctx) => {

@@ -6,7 +6,7 @@ import { mutation, query } from './_generated/server';
 export const getSpecialties = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query('specialties').order('name').collect();
+    return await ctx.db.query('specialties').order('asc').collect();
   },
 });
 
@@ -73,15 +73,17 @@ export const getTreatmentTypes = query({
     specialtyId: v.optional(v.id('specialties')),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query('treatmentTypes');
-
     if (args.specialtyId) {
-      query = query.withIndex('by_specialty', (q) =>
-        q.eq('specialtyId', args.specialtyId)
-      );
+      return await ctx.db
+        .query('treatmentTypes')
+        .withIndex('by_specialty', (q) =>
+          q.eq('specialtyId', args.specialtyId!)
+        )
+        .order('asc')
+        .collect();
     }
 
-    return await query.order('name').collect();
+    return await ctx.db.query('treatmentTypes').order('asc').collect();
   },
 });
 
@@ -150,15 +152,17 @@ export const getProcedures = query({
     treatmentTypeId: v.optional(v.id('treatmentTypes')),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query('procedures');
-
     if (args.treatmentTypeId) {
-      query = query.withIndex('by_treatment_type', (q) =>
-        q.eq('treatmentTypeId', args.treatmentTypeId)
-      );
+      return await ctx.db
+        .query('procedures')
+        .withIndex('by_treatment_type', (q) =>
+          q.eq('treatmentTypeId', args.treatmentTypeId!)
+        )
+        .order('asc')
+        .collect();
     }
 
-    return await query.order('name').collect();
+    return await ctx.db.query('procedures').order('asc').collect();
   },
 });
 
@@ -313,7 +317,7 @@ export const getSpecialtiesWithHierarchy = query({
   handler: async (ctx) => {
     const specialties = await ctx.db
       .query('specialties')
-      .order('name')
+      .order('asc')
       .collect();
 
     const result = [];
@@ -322,7 +326,7 @@ export const getSpecialtiesWithHierarchy = query({
       const treatmentTypes = await ctx.db
         .query('treatmentTypes')
         .withIndex('by_specialty', (q) => q.eq('specialtyId', specialty._id))
-        .order('name')
+        .order('asc')
         .collect();
 
       const treatmentTypesWithProcedures = [];
@@ -333,7 +337,7 @@ export const getSpecialtiesWithHierarchy = query({
           .withIndex('by_treatment_type', (q) =>
             q.eq('treatmentTypeId', treatmentType._id)
           )
-          .order('name')
+          .order('asc')
           .collect();
 
         treatmentTypesWithProcedures.push({
