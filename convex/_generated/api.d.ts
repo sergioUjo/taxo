@@ -13,11 +13,16 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as case_classifications from "../case_classifications.js";
 import type * as cases from "../cases.js";
-import type * as classifications from "../classifications.js";
+import type * as hierarchicalData from "../hierarchicalData.js";
 import type * as patients from "../patients.js";
+import type * as procedures from "../procedures.js";
 import type * as processDocumentDirect from "../processDocumentDirect.js";
+import type * as rules from "../rules.js";
 import type * as seed from "../seed.js";
+import type * as specialties from "../specialties.js";
+import type * as treatments from "../treatments.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,11 +33,16 @@ import type * as seed from "../seed.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  case_classifications: typeof case_classifications;
   cases: typeof cases;
-  classifications: typeof classifications;
+  hierarchicalData: typeof hierarchicalData;
   patients: typeof patients;
+  procedures: typeof procedures;
   processDocumentDirect: typeof processDocumentDirect;
+  rules: typeof rules;
   seed: typeof seed;
+  specialties: typeof specialties;
+  treatments: typeof treatments;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -3,15 +3,9 @@
 import { useState } from 'react';
 
 import { useMutation, useQuery } from 'convex/react';
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit,
-  Plus,
-  Settings,
-  Trash2,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Plus, Settings } from 'lucide-react';
 
+import { DeleteButton } from '@/components/delete-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,13 +64,13 @@ function AddSpecialtyDialog() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const createSpecialty = useMutation(api.classifications.createSpecialty);
+  const createSpecialtyMutation = useMutation(api.specialties.createSpecialty);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await createSpecialty({
+      await createSpecialtyMutation({
         name: name.trim(),
         description: description.trim() || undefined,
       });
@@ -155,8 +149,10 @@ export function RulesClassifications() {
   >(new Set());
 
   // Fetch data from Convex
-  const specialties = useQuery(api.classifications.getSpecialtiesWithHierarchy);
-  const rules = useQuery(api.classifications.getRules, {});
+  const specialties = useQuery(
+    api.hierarchicalData.getSpecialtiesWithHierarchy
+  );
+  const rules = useQuery(api.rules.getRules, {});
 
   const toggleSpecialty = (id: string) => {
     const newExpanded = new Set(expandedSpecialties);
@@ -261,9 +257,11 @@ export function RulesClassifications() {
                         <Button variant='ghost' size='sm'>
                           <Edit className='h-4 w-4' />
                         </Button>
-                        <Button variant='ghost' size='sm'>
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
+                        <DeleteButton
+                          id={specialty._id}
+                          type='specialty'
+                          name={specialty.name}
+                        />
                       </div>
                     </div>
                   </CardHeader>
@@ -312,9 +310,12 @@ export function RulesClassifications() {
                                   <Button variant='ghost' size='sm'>
                                     <Edit className='h-3 w-3' />
                                   </Button>
-                                  <Button variant='ghost' size='sm'>
-                                    <Trash2 className='h-3 w-3' />
-                                  </Button>
+                                  <DeleteButton
+                                    id={treatmentType._id}
+                                    type='treatmentType'
+                                    name={treatmentType.name}
+                                    onSuccess={() => window.location.reload()}
+                                  />
                                 </div>
                               </div>
 
@@ -343,9 +344,11 @@ export function RulesClassifications() {
                                             <Button variant='ghost' size='sm'>
                                               <Edit className='h-3 w-3' />
                                             </Button>
-                                            <Button variant='ghost' size='sm'>
-                                              <Trash2 className='h-3 w-3' />
-                                            </Button>
+                                            <DeleteButton
+                                              id={procedure._id}
+                                              type='procedure'
+                                              name={procedure.name}
+                                            />
                                           </div>
                                         </div>
                                       </div>
@@ -420,9 +423,12 @@ export function RulesClassifications() {
                       <Button variant='ghost' size='sm'>
                         <Edit className='h-4 w-4' />
                       </Button>
-                      <Button variant='ghost' size='sm'>
-                        <Trash2 className='h-4 w-4' />
-                      </Button>
+                      <DeleteButton
+                        id={rule._id}
+                        type='rule'
+                        name={rule.title}
+                        onSuccess={() => window.location.reload()}
+                      />
                     </div>
                   </div>
                 </CardHeader>
