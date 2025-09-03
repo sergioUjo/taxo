@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { AppSidebar } from './app-sidebar';
 import { ConvexClientProvider } from './convex-client-provider';
 import './globals.css';
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        <ConvexClientProvider>
+          <AppSidebar>{children}</AppSidebar>
+        </ConvexClientProvider>
       </body>
     </html>
   );
