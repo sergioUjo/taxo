@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Settings } from 'lucide-react';
 
 import { CasesDashboard } from '@/components/cases-dashboard';
 import { NewReferralForm } from '@/components/new-referral-form';
+import { RulesClassifications } from '@/components/rules-classifications';
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +18,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 
-type TabType = 'cases' | 'new-referral';
+type TabType = 'cases' | 'new-referral' | 'rules-classifications';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('cases');
@@ -49,6 +50,15 @@ export default function Home() {
                   <span>New Referral</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={activeTab === 'rules-classifications'}
+                  onClick={() => setActiveTab('rules-classifications')}
+                >
+                  <Settings />
+                  <span>Rules & Classifications</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
@@ -58,6 +68,9 @@ export default function Home() {
             <div className='min-h-[100vh] flex-1 rounded-xl p-4'>
               {activeTab === 'cases' && <CasesDashboard />}
               {activeTab === 'new-referral' && <NewReferralForm />}
+              {activeTab === 'rules-classifications' && (
+                <RulesClassifications />
+              )}
             </div>
           </div>
         </SidebarInset>

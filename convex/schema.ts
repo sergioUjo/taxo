@@ -79,4 +79,76 @@ export default defineSchema({
   })
     .index('by_case', ['caseId'])
     .index('by_timestamp', ['timestamp']),
+
+  // Classification System
+  specialties: defineTable({
+    name: v.string(), // e.g., "Ophthalmology", "Cardiology"
+    description: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }).index('by_name', ['name']),
+
+  treatmentTypes: defineTable({
+    specialtyId: v.id('specialties'),
+    name: v.string(), // e.g., "Consultation", "Diagnostics", "Therapy", "Procedure or Surgery", "Follow-up/Monitoring"
+    description: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index('by_specialty', ['specialtyId'])
+    .index('by_name', ['name']),
+
+  procedures: defineTable({
+    treatmentTypeId: v.id('treatmentTypes'),
+    name: v.string(), // e.g., "Trabeculectomy", "MRI brain"
+    description: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index('by_treatment_type', ['treatmentTypeId'])
+    .index('by_name', ['name']),
+
+  // Rules System - can be attached to any level of classification
+  rules: defineTable({
+    // Can be attached to specialty, treatmentType, or procedure
+    specialtyId: v.optional(v.id('specialties')),
+    treatmentTypeId: v.optional(v.id('treatmentTypes')),
+    procedureId: v.optional(v.id('procedures')),
+
+    title: v.string(),
+    description: v.string(),
+    ruleType: v.string(), // "eligibility", "workflow", "documentation", "scheduling", "approval"
+    priority: v.string(), // "low", "medium", "high", "critical"
+
+    // Rule conditions and actions (flexible JSON structure)
+    conditions: v.optional(v.any()), // JSON conditions when this rule applies
+    actions: v.optional(v.any()), // JSON actions to take when rule is triggered
+
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    createdBy: v.optional(v.string()),
+  })
+    .index('by_specialty', ['specialtyId'])
+    .index('by_treatment_type', ['treatmentTypeId'])
+    .index('by_procedure', ['procedureId'])
+    .index('by_type', ['ruleType']),
+
+  // Case Classifications - links cases to their classification
+  caseClassifications: defineTable({
+    caseId: v.id('cases'),
+    specialtyId: v.id('specialties'),
+    treatmentTypeId: v.optional(v.id('treatmentTypes')),
+    procedureId: v.optional(v.id('procedures')),
+
+    // AI confidence and metadata
+    confidence: v.optional(v.number()), // 0.0-1.0
+    classifiedBy: v.string(), // "ai", "user", "system"
+    classifiedAt: v.string(),
+    reviewedBy: v.optional(v.string()),
+    reviewedAt: v.optional(v.string()),
+  })
+    .index('by_case', ['caseId'])
+    .index('by_specialty', ['specialtyId'])
+    .index('by_treatment_type', ['treatmentTypeId'])
+    .index('by_procedure', ['procedureId']),
 });

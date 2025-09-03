@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { useQuery } from 'convex/react';
 import { format } from 'date-fns';
-import { Calendar, ChevronRight, Clock, FileText, User } from 'lucide-react';
+import { Edit2, FileText, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,36 @@ function getPriorityVariant(
   }
 }
 
+function getPatientDOB(patient: any): string {
+  if (!patient?.additionalData) return '';
+  const dobData = patient.additionalData.find(
+    (data: any) =>
+      data.name.toLowerCase().includes('date of birth') ||
+      data.name.toLowerCase().includes('dob')
+  );
+  return dobData?.value || '';
+}
+
+function getPatientGender(patient: any): string {
+  if (!patient?.additionalData) return '';
+  const genderData = patient.additionalData.find(
+    (data: any) =>
+      data.name.toLowerCase().includes('gender') ||
+      data.name.toLowerCase().includes('sex')
+  );
+  return genderData?.value || '';
+}
+
+function getInsuranceProvider(patient: any): string {
+  if (!patient?.additionalData) return '';
+  const insuranceData = patient.additionalData.find(
+    (data: any) =>
+      data.name.toLowerCase().includes('insurance') ||
+      data.name.toLowerCase().includes('provider')
+  );
+  return insuranceData?.value || '';
+}
+
 export function CasesDashboard() {
   const cases = useQuery(api.cases.getAllCases, {});
 
@@ -95,113 +125,127 @@ export function CasesDashboard() {
           </p>
         </div>
         <Button asChild>
-          <Link href='/new-referral'>Create New Referral</Link>
+          <Link href='/new-referral'>
+            <Plus className='mr-2 h-4 w-4' />
+            Create New Referral
+          </Link>
         </Button>
       </div>
 
-      <div className='grid gap-4'>
-        {cases.map((caseItem) => (
-          <Card
-            key={caseItem._id}
-            className='transition-shadow hover:shadow-lg'
-          >
-            <CardHeader>
-              <div className='flex items-start justify-between'>
-                <div className='flex-1 space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <CardTitle className='text-lg'>
-                      Case #{caseItem._id.slice(-6)}
-                    </CardTitle>
-                    <Badge variant={getStatusVariant(caseItem.status)}>
-                      {caseItem.status.replace('-', ' ').toUpperCase()}
-                    </Badge>
-                    <Badge
-                      variant={getPriorityVariant(
-                        caseItem.priority || 'medium'
-                      )}
-                    >
-                      {(caseItem.priority || 'medium').toUpperCase()}
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    Source: {caseItem.referralSource.replace('-', ' ')}
-                  </CardDescription>
-                </div>
-                <Link href={`/cases/${caseItem._id}`}>
-                  <Button variant='ghost' size='icon'>
-                    <ChevronRight className='h-4 w-4' />
-                  </Button>
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-2 gap-4 text-sm md:grid-cols-4'>
-                {caseItem.patient?.name && (
-                  <div className='flex items-center gap-2'>
-                    <User className='text-muted-foreground h-4 w-4' />
-                    <span>{caseItem.patient.name}</span>
-                  </div>
-                )}
-                <div className='flex items-center gap-2'>
-                  <Clock className='text-muted-foreground h-4 w-4' />
-                  <span>
-                    {format(new Date(caseItem.createdAt), 'MMM d, yyyy')}
-                  </span>
-                </div>
-                {caseItem.appointmentDate && (
-                  <div className='flex items-center gap-2'>
-                    <Calendar className='text-muted-foreground h-4 w-4' />
-                    <span>
-                      {format(
-                        new Date(caseItem.appointmentDate),
-                        'MMM d, yyyy'
-                      )}
+      <Card>
+        <div className='overflow-x-auto'>
+          <table className='w-full'>
+            <thead>
+              <tr className='border-border/40 border-b'>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  ID
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  Name
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  DOB
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  Gender
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  Provider
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  Insurer
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
+                  Prior Authorizations
+                </th>
+                <th className='text-muted-foreground px-4 py-3 text-center text-sm font-medium'>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {cases.map((caseItem, index) => (
+                <tr
+                  key={caseItem._id}
+                  className={`border-border/20 hover:bg-muted/30 border-b transition-colors ${
+                    index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                  }`}
+                >
+                  <td className='px-4 py-3'>
+                    <span className='text-sm font-medium'>
+                      {caseItem._id.slice(-6)}
                     </span>
-                  </div>
-                )}
-                {caseItem.eligibilityStatus && (
-                  <div className='flex items-center gap-2'>
-                    <span className='font-medium'>Insurance:</span>
-                    <Badge
-                      variant={
-                        caseItem.eligibilityStatus === 'eligible'
-                          ? 'default'
-                          : caseItem.eligibilityStatus === 'not-eligible'
-                            ? 'destructive'
-                            : 'secondary'
-                      }
-                    >
-                      {caseItem.eligibilityStatus.replace('-', ' ')}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-              {caseItem.patient && (
-                <div className='text-muted-foreground mt-4 text-sm'>
-                  <span className='font-medium'>Patient:</span>{' '}
-                  {caseItem.patient.name}
-                  {caseItem.patient.email && ` • ${caseItem.patient.email}`}
-                  {caseItem.patient.phone && ` • ${caseItem.patient.phone}`}
-                  {/* Show key additional data */}
-                  {caseItem.patient.additionalData?.find((data) =>
-                    data.name.toLowerCase().includes('date of birth')
-                  )?.value &&
-                    ` • DOB: ${
-                      caseItem.patient.additionalData.find((data) =>
-                        data.name.toLowerCase().includes('date of birth')
-                      )?.value
-                    }`}
-                </div>
-              )}
-              {caseItem.notes && (
-                <div className='text-muted-foreground mt-4 text-sm'>
-                  <span className='font-medium'>Notes:</span> {caseItem.notes}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <span className='text-sm font-medium'>
+                      {caseItem.patient?.name || 'Unknown Patient'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <span className='text-muted-foreground text-sm'>
+                      {getPatientDOB(caseItem.patient) || '—'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <span className='text-muted-foreground text-sm'>
+                      {getPatientGender(caseItem.patient) || '—'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <span className='text-muted-foreground text-sm'>
+                      {caseItem.provider || '—'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <span className='text-muted-foreground text-sm'>
+                      {getInsuranceProvider(caseItem.patient) || '—'}
+                    </span>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <div className='flex flex-wrap gap-1'>
+                      <Badge
+                        variant={getStatusVariant(caseItem.status)}
+                        className='text-xs'
+                      >
+                        {caseItem.status.replace('-', ' ')}
+                      </Badge>
+                      {caseItem.eligibilityStatus && (
+                        <Badge
+                          variant={
+                            caseItem.eligibilityStatus === 'eligible'
+                              ? 'default'
+                              : caseItem.eligibilityStatus === 'not-eligible'
+                                ? 'destructive'
+                                : 'secondary'
+                          }
+                          className='text-xs'
+                        >
+                          {caseItem.eligibilityStatus.replace('-', ' ')}
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <div className='flex items-center justify-center gap-1'>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        className='h-8 w-8 p-0'
+                        asChild
+                      >
+                        <Link href={`/cases/${caseItem._id}`}>
+                          <Edit2 className='h-3 w-3' />
+                          <span className='sr-only'>Edit case</span>
+                        </Link>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }
