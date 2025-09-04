@@ -1,47 +1,112 @@
 'use client';
 
-import { useQuery } from 'convex/react';
-import { Edit, Settings } from 'lucide-react';
+import { useState } from 'react';
+
+import { useMutation, useQuery } from 'convex/react';
+import { Edit, Plus, Settings } from 'lucide-react';
 
 import { DeleteButton } from '@/components/delete-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 
 import { api } from '../../convex/_generated/api';
-import type { Doc } from '../../convex/_generated/dataModel';
+import type { Doc, Id } from '../../convex/_generated/dataModel';
 
-const getRulePriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'critical':
-      return 'bg-red-100 text-red-800';
-    case 'high':
-      return 'bg-orange-100 text-orange-800';
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'low':
-      return 'bg-green-100 text-green-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
+function AddRuleDialog() {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
 
-const getRuleTypeColor = (type: string) => {
-  switch (type) {
-    case 'eligibility':
-      return 'bg-blue-100 text-blue-800';
-    case 'workflow':
-      return 'bg-purple-100 text-purple-800';
-    case 'documentation':
-      return 'bg-indigo-100 text-indigo-800';
-    case 'scheduling':
-      return 'bg-teal-100 text-teal-800';
-    case 'approval':
-      return 'bg-red-100 text-red-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
+  const createRuleMutation = useMutation(api.rules.createRule);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await createRuleMutation({
+        title: title.trim(),
+        description: description.trim(),
+      });
+
+      // Reset form and close dialog
+      setTitle('');
+      setDescription('');
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to create rule:', error);
+      // TODO: Add proper error handling with toast notifications
+    }
+  };
+
+  const isFormValid = title.trim() && description.trim();
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant='ghost' size='sm'>
+          <Plus className='mr-1 h-3 w-3' />
+          Add Rule
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add New Rule</SheetTitle>
+          <SheetDescription>
+            Create a new rule to automate your workflow processes.
+          </SheetDescription>
+        </SheetHeader>
+        <form onSubmit={handleSubmit} className='space-y-4 py-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='title'>Rule Title</Label>
+            <Input
+              id='title'
+              placeholder='Enter rule title...'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='description'>Description</Label>
+            <Textarea
+              id='description'
+              placeholder='Enter rule description...'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              required
+            />
+          </div>
+        </form>
+        <SheetFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button type='submit' onClick={handleSubmit} disabled={!isFormValid}>
+            Create Rule
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
 export function RulesManagement() {
   const rules = useQuery(api.rules.getRules, {});
@@ -69,17 +134,6 @@ export function RulesManagement() {
                   <p className='text-muted-foreground mt-1 text-sm'>
                     {rule.description}
                   </p>
-                  <div className='mt-3 flex items-center space-x-2'>
-                    <Badge className={getRuleTypeColor(rule.ruleType)}>
-                      {rule.ruleType}
-                    </Badge>
-                    <Badge className={getRulePriorityColor(rule.priority)}>
-                      {rule.priority}
-                    </Badge>
-                    {rule.specialtyId && (
-                      <Badge variant='outline'>Specialty Rule</Badge>
-                    )}
-                  </div>
                 </div>
                 <div className='flex items-center space-x-2'>
                   <Button variant='ghost' size='sm'>
@@ -95,6 +149,9 @@ export function RulesManagement() {
           </Card>
         ))
       )}
+      <div className='flex justify-center pt-4'>
+        <AddRuleDialog />
+      </div>
     </div>
   );
 }

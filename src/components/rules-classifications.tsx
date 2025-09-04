@@ -2,10 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import {
-  AddSpecialtyDialog,
-  ClassificationsManagement,
-} from './classifications-management';
+import { ClassificationsManagement } from './classifications-management';
 import { RulesManagement } from './rules-management';
 
 export function RulesClassifications() {
@@ -21,7 +18,6 @@ export function RulesClassifications() {
             business rules
           </p>
         </div>
-        <AddSpecialtyDialog />
       </div>
 
       <Tabs defaultValue='specialties'>

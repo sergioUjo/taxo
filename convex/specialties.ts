@@ -1,8 +1,8 @@
 import { v } from 'convex/values';
 
+import { api } from './_generated/api';
 import { mutation, query } from './_generated/server';
 import { deleteTreatmentTypeCascade } from './treatments';
-import {api} from "./_generated/api";
 
 // SPECIALTY QUERIES AND MUTATIONS
 export const getSpecialties = query({

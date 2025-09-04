@@ -108,30 +108,40 @@ export default defineSchema({
     .index('by_treatment_type', ['treatmentTypeId'])
     .index('by_name', ['name']),
 
-  // Rules System - can be attached to any level of classification
+  // Rules System - independent entities that can be referenced by specialties, treatments, and procedures
   rules: defineTable({
-    // Can be attached to specialty, treatmentType, or procedure
-    specialtyId: v.optional(v.id('specialties')),
-    treatmentTypeId: v.optional(v.id('treatmentTypes')),
-    procedureId: v.optional(v.id('procedures')),
-
     title: v.string(),
     description: v.string(),
-    ruleType: v.string(), // "eligibility", "workflow", "documentation", "scheduling", "approval"
-    priority: v.string(), // "low", "medium", "high", "critical"
-
-    // Rule conditions and actions (flexible JSON structure)
-    conditions: v.optional(v.any()), // JSON conditions when this rule applies
-    actions: v.optional(v.any()), // JSON actions to take when rule is triggered
 
     createdAt: v.string(),
     updatedAt: v.string(),
     createdBy: v.optional(v.string()),
+  }).index('by_title', ['title']),
+
+  // Junction tables for many-to-many relationships
+  specialtyRules: defineTable({
+    specialtyId: v.id('specialties'),
+    ruleId: v.id('rules'),
+    createdAt: v.string(),
   })
     .index('by_specialty', ['specialtyId'])
+    .index('by_rule', ['ruleId']),
+
+  treatmentTypeRules: defineTable({
+    treatmentTypeId: v.id('treatmentTypes'),
+    ruleId: v.id('rules'),
+    createdAt: v.string(),
+  })
     .index('by_treatment_type', ['treatmentTypeId'])
+    .index('by_rule', ['ruleId']),
+
+  procedureRules: defineTable({
+    procedureId: v.id('procedures'),
+    ruleId: v.id('rules'),
+    createdAt: v.string(),
+  })
     .index('by_procedure', ['procedureId'])
-    .index('by_type', ['ruleType']),
+    .index('by_rule', ['ruleId']),
 
   // Case Classifications - links cases to their classification
   caseClassifications: defineTable({
