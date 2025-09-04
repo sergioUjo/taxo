@@ -2,9 +2,13 @@ import pymupdf4llm
 import requests
 from agents import Agent, Runner
 from dotenv import load_dotenv
+load_dotenv("/Users/sergioaraujo/Personal/taxo/.env.local")
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional
+
+from api.taxo_agents.classify_agent import classify_agent, classify_referral
 
 
 class ResultItem(BaseModel):
@@ -44,7 +48,6 @@ patient_info_extractor = Agent(
 )
 
 
-load_dotenv(".env.local")
 
 app = FastAPI()
 
@@ -56,7 +59,6 @@ class Request(BaseModel):
 
 @app.post("/api/process-pdf")
 async def handle_chat_data(request: Request):
-    print(f"Processing PDF: {request.pdf_path}")
     pdf_path = request.pdf_path
     import tempfile
 
@@ -67,3 +69,16 @@ async def handle_chat_data(request: Request):
         tmp_pdf_path = tmp_file.name
         pdf_markdown = pymupdf4llm.to_markdown(tmp_pdf_path)
         return ( await Runner.run(patient_info_extractor, pdf_markdown)).final_output
+    
+@app.post("/api/classify-referral")
+async def classify(request: Request):
+    pdf_path = request.pdf_path
+    import tempfile
+
+    response = requests.get(pdf_path)
+    response.raise_for_status()
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_file:
+        tmp_file.write(response.content)
+        tmp_pdf_path = tmp_file.name
+        pdf_markdown = pymupdf4llm.to_markdown(tmp_pdf_path)
+        return await classify_referral(pdf_markdown)
