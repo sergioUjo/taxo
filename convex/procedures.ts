@@ -66,13 +66,13 @@ export const updateProcedure = mutation({
 export const deleteProcedureCascade = mutation({
   args: { id: v.id('procedures') },
   handler: async (ctx, args) => {
-    // Delete rules associated with this procedure
+    // Delete procedure-rule associations
     const procedureRules = await ctx.db
-      .query('rules')
+      .query('procedureRules')
       .withIndex('by_procedure', (q) => q.eq('procedureId', args.id))
       .collect();
-    for (const rule of procedureRules) {
-      await ctx.db.delete(rule._id);
+    for (const procedureRule of procedureRules) {
+      await ctx.db.delete(procedureRule._id);
     }
 
     // Delete case classifications associated with this procedure
