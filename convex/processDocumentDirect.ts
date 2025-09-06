@@ -5,7 +5,7 @@ import { Id } from './_generated/dataModel';
 import { action } from './_generated/server';
 
 // Call Next.js API endpoint (which redirects to FastAPI in development)
-async function extractPatientFromPDF(pdfUrl: string) {
+async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
   console.log(`Extracting patient data from: ${pdfUrl}`);
 
   // Get the app URL from environment variables
@@ -22,6 +22,7 @@ async function extractPatientFromPDF(pdfUrl: string) {
       },
       body: JSON.stringify({
         pdf_path: pdfUrl,
+        case_id: caseId,
       }),
     });
 
@@ -68,7 +69,7 @@ export const processDocumentDirectly = action({
         email?: string;
         phone?: string;
         additionalData?: { name: string; value: string }[];
-      } = await extractPatientFromPDF(documentUrl);
+      } = await extractPatientFromPDF(documentUrl, args.caseId);
 
       if (!patientData.email) {
         delete patientData.email;

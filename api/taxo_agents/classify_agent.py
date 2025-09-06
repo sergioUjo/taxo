@@ -4,9 +4,8 @@ from typing import List
 
 from agents import Agent, Runner
 from pydantic import BaseModel
-from convex import ConvexClient
-
-client = ConvexClient(os.getenv("NEXT_PUBLIC_CONVEX_URL"))
+from api.convex_client import convex_client
+client = convex_client
 INSTRUCTIONS = """
 You are a clinical triage and routing assistant. Given a medical procedure requested and a description classify it.
 
