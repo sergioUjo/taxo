@@ -57,3 +57,162 @@ export const updateCaseClassification = mutation({
     return await ctx.db.patch(id, patchData);
   },
 });
+
+// Classify a case with a procedure and create rule checks
+export const classifyCaseWithProcedure = mutation({
+  args: {
+    caseId: v.id('cases'),
+    specialtyId: v.id('specialties'),
+    treatmentTypeId: v.id('treatmentTypes'),
+    procedureId: v.id('procedures'),
+    classifiedBy: v.string(),
+    confidence: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const now = new Date().toISOString();
+
+    // First, check if there's already a classification for this case
+    const existingClassification = await ctx.db
+      .query('caseClassifications')
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
+      .first();
+
+    let classificationId;
+
+    if (existingClassification) {
+      // Update existing classification
+      await ctx.db.patch(existingClassification._id, {
+        specialtyId: args.specialtyId,
+        treatmentTypeId: args.treatmentTypeId,
+        procedureId: args.procedureId,
+        confidence: args.confidence,
+        classifiedBy: args.classifiedBy,
+        classifiedAt: now,
+      });
+      classificationId = existingClassification._id;
+
+      // Delete existing rule checks
+      const existingRuleChecks = await ctx.db
+        .query('ruleChecks')
+        .withIndex('by_case_classification', (q) =>
+          q.eq('caseClassificationId', classificationId)
+        )
+        .collect();
+      for (const check of existingRuleChecks) {
+        await ctx.db.delete(check._id);
+      }
+    } else {
+      // Create new classification
+      classificationId = await ctx.db.insert('caseClassifications', {
+        caseId: args.caseId,
+        specialtyId: args.specialtyId,
+        treatmentTypeId: args.treatmentTypeId,
+        procedureId: args.procedureId,
+        confidence: args.confidence,
+        classifiedBy: args.classifiedBy,
+        classifiedAt: now,
+      });
+    }
+
+    // Get all rules for this procedure
+    const procedureRules = await ctx.db
+      .query('procedureRules')
+      .withIndex('by_procedure', (q) => q.eq('procedureId', args.procedureId))
+      .collect();
+
+    // Create rule checks for each rule (initially set to "needs_information")
+    const ruleCheckIds = [];
+    for (const procedureRule of procedureRules) {
+      const ruleCheckId = await ctx.db.insert('ruleChecks', {
+        caseClassificationId: classificationId,
+        ruleId: procedureRule.ruleId,
+        status: 'needs_information',
+        checkedBy: 'system',
+        checkedAt: now,
+      });
+      ruleCheckIds.push(ruleCheckId);
+    }
+
+    // Log the classification
+    await ctx.db.insert('activityLogs', {
+      caseId: args.caseId,
+      action: 'case_classified',
+      details: `Case classified with procedure and ${procedureRules.length} rules to check`,
+      performedBy: args.classifiedBy,
+      timestamp: now,
+    });
+
+    return { classificationId, ruleCheckIds };
+  },
+});
+
+// Get case classification with rule checks
+export const getCaseClassificationWithRuleChecks = query({
+  args: { caseId: v.id('cases') },
+  handler: async (ctx, args) => {
+    const classification = await ctx.db
+      .query('caseClassifications')
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
+      .first();
+
+    if (!classification) return null;
+
+    // Get rule checks
+    const ruleChecks = await ctx.db
+      .query('ruleChecks')
+      .withIndex('by_case_classification', (q) =>
+        q.eq('caseClassificationId', classification._id)
+      )
+      .collect();
+
+    // Get rule details for each check
+    const ruleChecksWithDetails = await Promise.all(
+      ruleChecks.map(async (check) => {
+        const rule = await ctx.db.get(check.ruleId);
+        return {
+          ...check,
+          rule,
+        };
+      })
+    );
+
+    // Get specialty, treatment type, and procedure details
+    const specialty = classification.specialtyId
+      ? await ctx.db.get(classification.specialtyId)
+      : null;
+    const treatmentType = classification.treatmentTypeId
+      ? await ctx.db.get(classification.treatmentTypeId)
+      : null;
+    const procedure = classification.procedureId
+      ? await ctx.db.get(classification.procedureId)
+      : null;
+
+    return {
+      ...classification,
+      specialty,
+      treatmentType,
+      procedure,
+      ruleChecks: ruleChecksWithDetails,
+    };
+  },
+});
+
+// Update rule check status
+export const updateRuleCheckStatus = mutation({
+  args: {
+    ruleCheckId: v.id('ruleChecks'),
+    status: v.string(), // "passed", "needs_information", "denied"
+    notes: v.optional(v.string()),
+    checkedBy: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = new Date().toISOString();
+
+    return await ctx.db.patch(args.ruleCheckId, {
+      status: args.status,
+      notes: args.notes,
+      checkedBy: args.checkedBy,
+      checkedAt: now,
+    });
+  },
+});

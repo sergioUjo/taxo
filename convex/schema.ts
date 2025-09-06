@@ -161,4 +161,19 @@ export default defineSchema({
     .index('by_specialty', ['specialtyId'])
     .index('by_treatment_type', ['treatmentTypeId'])
     .index('by_procedure', ['procedureId']),
+
+  // Rule Checks - tracks the status of each rule for a case classification
+  ruleChecks: defineTable({
+    caseClassificationId: v.id('caseClassifications'),
+    ruleId: v.id('rules'),
+    status: v.string(), // "passed", "needs_information", "denied"
+    notes: v.optional(v.string()), // Additional notes about why the rule passed/failed
+    checkedBy: v.string(), // "ai", "user", "system"
+    checkedAt: v.string(),
+    reviewedBy: v.optional(v.string()),
+    reviewedAt: v.optional(v.string()),
+  })
+    .index('by_case_classification', ['caseClassificationId'])
+    .index('by_rule', ['ruleId'])
+    .index('by_status', ['status']),
 });

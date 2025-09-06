@@ -16,6 +16,7 @@ import {
   User,
 } from 'lucide-react';
 
+import { CaseClassification } from '@/components/case-classification';
 import { DocumentDownload } from '@/components/document-download';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -323,7 +324,8 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
           </CardContent>
         </Card>
       </div>
-
+      {/* Case Classification */}
+      <CaseClassification caseId={caseId} />
       {/* Documents */}
       <Card>
         <CardHeader>
