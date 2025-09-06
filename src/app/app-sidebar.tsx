@@ -39,11 +39,11 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  isActive={pathname === '/new-referral'}
-                  onClick={() => router.push('/new-referral')}
+                  isActive={pathname === '/referral'}
+                  onClick={() => router.push('/referral')}
                 >
                   <Plus />
-                  <span>New Referral</span>
+                  <span>Referral</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

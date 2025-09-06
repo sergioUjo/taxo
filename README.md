@@ -72,8 +72,8 @@ pnpm dev
 
 ## Usage
 
-1. **Create a New Referral**:
-   - Navigate to "/new-referral" or click "Create New Referral" button
+1. **Create a Referral**:
+   - Navigate to "/referral" or click "Create Referral" button
    - Select the referral source
    - Set priority level
    - Add optional notes

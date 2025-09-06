@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 
+import type { Id } from './_generated/dataModel';
 import { mutation, query } from './_generated/server';
 
 // CASE CLASSIFICATION QUERIES AND MUTATIONS
@@ -77,7 +78,7 @@ export const classifyCaseWithProcedure = mutation({
       .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
       .first();
 
-    let classificationId;
+    let classificationId: Id<'caseClassifications'>;
 
     if (existingClassification) {
       // Update existing classification

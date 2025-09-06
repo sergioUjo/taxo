@@ -8,13 +8,7 @@ import { useMutation } from 'convex/react';
 import { CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Label } from '@/components/ui/label';
 
@@ -28,7 +22,11 @@ type UploadedFile = {
   fileType: string;
 };
 
-export function NewReferralForm() {
+type ReferralFormProps = {
+  onSuccess?: () => void;
+};
+
+export function ReferralForm({ onSuccess }: ReferralFormProps) {
   const router = useRouter();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,10 +65,17 @@ export function NewReferralForm() {
         caseId,
       });
       setCreatedCaseId(caseId);
-      // Navigate to cases dashboard after a short delay
-      setTimeout(() => {
-        router.push('/cases');
-      }, 2000);
+      // Call onSuccess callback if provided, otherwise navigate to cases dashboard
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+          router.push('/cases');
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          router.push('/cases');
+        }, 2000);
+      }
     } catch (error) {
       console.error('Error creating case:', error);
       setIsSubmitting(false);
@@ -97,34 +102,28 @@ export function NewReferralForm() {
   }
 
   return (
-    <Card className='mx-auto max-w-2xl'>
-      <CardHeader>
-        <CardTitle>Create New Referral Case</CardTitle>
-        <CardDescription>
-          Upload referral documents and create a new case for processing
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='space-y-6'>
-        <div className='space-y-2'>
-          <Label>Upload Documents</Label>
-          <FileUpload
-            onFilesUploaded={setUploadedFiles}
-            onUploadError={setUploadError}
-            disabled={isSubmitting}
-          />
-          {uploadError && (
-            <p className='text-destructive text-sm'>{uploadError}</p>
-          )}
-        </div>
+    <div>
+      <div className='space-y-2'>
+        <Label>Upload Documents</Label>
+        <FileUpload
+          onFilesUploaded={setUploadedFiles}
+          onUploadError={setUploadError}
+          disabled={isSubmitting}
+          maxFiles={1}
+          acceptedTypes={['application/pdf']}
+        />
+        {uploadError && (
+          <p className='text-destructive text-sm'>{uploadError}</p>
+        )}
+      </div>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting || uploadedFiles.length === 0}
-          className='w-full'
-        >
-          {isSubmitting ? 'Creating Case...' : 'Create Case'}
-        </Button>
-      </CardContent>
-    </Card>
+      <Button
+        onClick={handleSubmit}
+        disabled={isSubmitting || uploadedFiles.length === 0}
+        className='w-full'
+      >
+        {isSubmitting ? 'Creating Case...' : 'Create Case'}
+      </Button>
+    </div>
   );
 }

@@ -3,8 +3,7 @@
 import Link from 'next/link';
 
 import { useQuery } from 'convex/react';
-import { format } from 'date-fns';
-import { Edit2, FileText, Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { RulesStatusCell } from './rules-status-cell';
 
 function getStatusVariant(
   status: string
@@ -57,36 +65,6 @@ function getPriorityVariant(
   }
 }
 
-function getPatientDOB(patient: any): string {
-  if (!patient?.additionalData) return '';
-  const dobData = patient.additionalData.find(
-    (data: any) =>
-      data.name.toLowerCase().includes('date of birth') ||
-      data.name.toLowerCase().includes('dob')
-  );
-  return dobData?.value || '';
-}
-
-function getPatientGender(patient: any): string {
-  if (!patient?.additionalData) return '';
-  const genderData = patient.additionalData.find(
-    (data: any) =>
-      data.name.toLowerCase().includes('gender') ||
-      data.name.toLowerCase().includes('sex')
-  );
-  return genderData?.value || '';
-}
-
-function getInsuranceProvider(patient: any): string {
-  if (!patient?.additionalData) return '';
-  const insuranceData = patient.additionalData.find(
-    (data: any) =>
-      data.name.toLowerCase().includes('insurance') ||
-      data.name.toLowerCase().includes('provider')
-  );
-  return insuranceData?.value || '';
-}
-
 export function CasesDashboard() {
   const cases = useQuery(api.cases.getAllCases, {});
 
@@ -108,7 +86,7 @@ export function CasesDashboard() {
             Get started by creating your first referral case
           </p>
           <Button asChild>
-            <Link href='/new-referral'>Create New Referral</Link>
+            <Link href='/referral'>Create Referral</Link>
           </Button>
         </CardContent>
       </Card>
@@ -125,126 +103,79 @@ export function CasesDashboard() {
           </p>
         </div>
         <Button asChild>
-          <Link href='/new-referral'>
+          <Link href='/referral'>
             <Plus className='mr-2 h-4 w-4' />
-            Create New Referral
+            Create Referral
           </Link>
         </Button>
       </div>
 
       <Card>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead>
-              <tr className='border-border/40 border-b'>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  ID
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  Name
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  DOB
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  Gender
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  Provider
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  Insurer
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-left text-sm font-medium'>
-                  Prior Authorizations
-                </th>
-                <th className='text-muted-foreground px-4 py-3 text-center text-sm font-medium'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {cases.map((caseItem, index) => (
-                <tr
-                  key={caseItem._id}
-                  className={`border-border/20 hover:bg-muted/30 border-b transition-colors ${
-                    index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
-                  }`}
-                >
-                  <td className='px-4 py-3'>
-                    <span className='text-sm font-medium'>
-                      {caseItem._id.slice(-6)}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <span className='text-sm font-medium'>
-                      {caseItem.patient?.name || 'Unknown Patient'}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <span className='text-muted-foreground text-sm'>
-                      {getPatientDOB(caseItem.patient) || '—'}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <span className='text-muted-foreground text-sm'>
-                      {getPatientGender(caseItem.patient) || '—'}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <span className='text-muted-foreground text-sm'>
-                      {caseItem.provider || '—'}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <span className='text-muted-foreground text-sm'>
-                      {getInsuranceProvider(caseItem.patient) || '—'}
-                    </span>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <div className='flex flex-wrap gap-1'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Case Status</TableHead>
+              <TableHead>Rules Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {cases.map((caseItem) => (
+              <TableRow
+                key={caseItem._id}
+                className='cursor-pointer'
+                onClick={() =>
+                  (window.location.href = `/cases/${caseItem._id}`)
+                }
+              >
+                <TableCell>
+                  <span className='text-sm font-medium'>
+                    {caseItem._id.slice(-6)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className='text-sm font-medium'>
+                    {caseItem.patient?.name || 'Unknown Patient'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className='text-muted-foreground text-sm'>
+                    {caseItem.provider || '—'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className='flex flex-wrap gap-1'>
+                    <Badge
+                      variant={getStatusVariant(caseItem.status)}
+                      className='text-xs'
+                    >
+                      {caseItem.status.replace('-', ' ')}
+                    </Badge>
+                    {caseItem.eligibilityStatus && (
                       <Badge
-                        variant={getStatusVariant(caseItem.status)}
+                        variant={
+                          caseItem.eligibilityStatus === 'eligible'
+                            ? 'default'
+                            : caseItem.eligibilityStatus === 'not-eligible'
+                              ? 'destructive'
+                              : 'secondary'
+                        }
                         className='text-xs'
                       >
-                        {caseItem.status.replace('-', ' ')}
+                        {caseItem.eligibilityStatus.replace('-', ' ')}
                       </Badge>
-                      {caseItem.eligibilityStatus && (
-                        <Badge
-                          variant={
-                            caseItem.eligibilityStatus === 'eligible'
-                              ? 'default'
-                              : caseItem.eligibilityStatus === 'not-eligible'
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                          className='text-xs'
-                        >
-                          {caseItem.eligibilityStatus.replace('-', ' ')}
-                        </Badge>
-                      )}
-                    </div>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <div className='flex items-center justify-center gap-1'>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='h-8 w-8 p-0'
-                        asChild
-                      >
-                        <Link href={`/cases/${caseItem._id}`}>
-                          <Edit2 className='h-3 w-3' />
-                          <span className='sr-only'>Edit case</span>
-                        </Link>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <RulesStatusCell caseId={caseItem._id} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );
