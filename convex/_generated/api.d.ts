@@ -20,7 +20,6 @@ import type * as patients from "../patients.js";
 import type * as procedures from "../procedures.js";
 import type * as processDocumentDirect from "../processDocumentDirect.js";
 import type * as rules from "../rules.js";
-import type * as seed from "../seed.js";
 import type * as specialties from "../specialties.js";
 import type * as treatments from "../treatments.js";
 
@@ -40,7 +39,6 @@ declare const fullApi: ApiFromModules<{
   procedures: typeof procedures;
   processDocumentDirect: typeof processDocumentDirect;
   rules: typeof rules;
-  seed: typeof seed;
   specialties: typeof specialties;
   treatments: typeof treatments;
 }>;

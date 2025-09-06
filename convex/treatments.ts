@@ -94,13 +94,13 @@ export const deleteTreatmentTypeCascade = mutation({
 
     // Delete procedures and their rules
     for (const procedure of procedures) {
-      // Delete rules associated with this procedure
+      // Delete procedure-rule associations
       const procedureRules = await ctx.db
-        .query('rules')
+        .query('procedureRules')
         .withIndex('by_procedure', (q) => q.eq('procedureId', procedure._id))
         .collect();
-      for (const rule of procedureRules) {
-        await ctx.db.delete(rule._id);
+      for (const procedureRule of procedureRules) {
+        await ctx.db.delete(procedureRule._id);
       }
 
       // Delete case classifications associated with this procedure
@@ -116,13 +116,13 @@ export const deleteTreatmentTypeCascade = mutation({
       await ctx.db.delete(procedure._id);
     }
 
-    // Delete rules associated with this treatment type
+    // Delete treatment type-rule associations
     const treatmentTypeRules = await ctx.db
-      .query('rules')
+      .query('treatmentTypeRules')
       .withIndex('by_treatment_type', (q) => q.eq('treatmentTypeId', args.id))
       .collect();
-    for (const rule of treatmentTypeRules) {
-      await ctx.db.delete(rule._id);
+    for (const treatmentTypeRule of treatmentTypeRules) {
+      await ctx.db.delete(treatmentTypeRule._id);
     }
 
     // Delete case classifications associated with this treatment type
