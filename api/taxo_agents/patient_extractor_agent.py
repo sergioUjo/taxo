@@ -53,7 +53,7 @@ patient_info_extractor = Agent(
     If information is not present or unclear, leave the field as None.
     """,
     output_type=PatientInfo,
-    model="gpt-4o"
+    model="gpt-4.1-mini"
 )
 
 def find_or_create_patient(patient_info: PatientInfo) -> str:

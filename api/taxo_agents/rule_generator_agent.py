@@ -111,7 +111,7 @@ Guidelines
 	•	Each rule must have a clear reason for inclusion.
     """,
     output_type=RuleGenerationOutput,
-    model="gpt-4o",
+    model="gpt-4.1",
 )
 
 
