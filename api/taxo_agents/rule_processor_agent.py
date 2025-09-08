@@ -50,7 +50,7 @@ rule_processor_agent = Agent(
     - When in doubt about having sufficient information, err towards 'needs_more_information' rather than 'deny'
     """,
     output_type=RuleProcessingOutput,
-    model="gpt-5",
+    model="gpt-5-mini",
 )
 
 
