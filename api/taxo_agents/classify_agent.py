@@ -139,9 +139,6 @@ async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
 
     treatment_types = list_treatment_types()
     procedures = list_procedures()
-    print(specialties)
-    print(treatment_types)
-    print(procedures)
     for specialty in specialties:
         specialty['treatmentTypes'] = []
 
@@ -191,15 +188,6 @@ async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
         procedure_is_new = True
     else:
         matched_procedure = matched_procedure["_id"]
-
-    convex_client.mutation("case_classifications:classifyCaseWithProcedure", {
-        "caseId": case_id,
-        "specialtyId": matched_specialty,
-        "treatmentTypeId": matched_treatment_type,
-        "procedureId": matched_procedure,
-        "classifiedBy": "ai",
-    })
-    
     # Generate rules for new procedures
     if procedure_is_new:
         try:
@@ -215,5 +203,14 @@ async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
             logger.info(f"Successfully generated rules for new procedure: {result.procedure}")
         except Exception as exc:
             logger.error(f"Failed to generate rules for new procedure {result.procedure}: {exc}")
+
+    convex_client.mutation("case_classifications:classifyCaseWithProcedure", {
+        "caseId": case_id,
+        "specialtyId": matched_specialty,
+        "treatmentTypeId": matched_treatment_type,
+        "procedureId": matched_procedure,
+        "classifiedBy": "ai",
+    })
     
+
     return result

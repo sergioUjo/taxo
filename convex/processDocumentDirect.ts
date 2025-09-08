@@ -21,7 +21,7 @@ async function extractPatientFromPDF(caseId: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        caseId: caseId,
+        case_id: caseId,
       }),
     });
 
