@@ -28,6 +28,7 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
 
   // Mutations
   const updateRuleCheck = useMutation(api.cases.updateRuleCheck);
+  const removeRuleCheck = useMutation(api.cases.removeRuleCheck);
 
   const handleUpdateRuleStatus = async (
     ruleCheckId: Id<'ruleChecks'>,
@@ -50,6 +51,19 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
       });
     } catch (error) {
       console.error('Error updating rule check:', error);
+    }
+  };
+
+  const handleRemoveRuleCheck = async (ruleCheckId: Id<'ruleChecks'>) => {
+    try {
+      await removeRuleCheck({
+        ruleCheckId,
+        caseId,
+      });
+      // The UI will automatically update since we're using queries
+    } catch (error) {
+      console.error('Error removing rule check:', error);
+      throw error; // Re-throw to let the component handle it
     }
   };
 
@@ -153,6 +167,7 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
                     key={ruleCheck._id}
                     ruleCheck={ruleCheck}
                     onUpdateStatus={handleUpdateRuleStatus}
+                    onRemoveRuleCheck={handleRemoveRuleCheck}
                   />
                 ))}
               </div>

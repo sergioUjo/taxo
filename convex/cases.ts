@@ -361,6 +361,39 @@ export const updateRuleCheck = mutation({
   },
 });
 
+// Remove rule check from a case
+export const removeRuleCheck = mutation({
+  args: {
+    ruleCheckId: v.id('ruleChecks'),
+    caseId: v.id('cases'),
+  },
+  handler: async (ctx, args) => {
+    // First verify the rule check belongs to the specified case
+    const ruleCheck = await ctx.db.get(args.ruleCheckId);
+    if (!ruleCheck) {
+      throw new Error('Rule check not found');
+    }
+
+    if (ruleCheck.caseId !== args.caseId) {
+      throw new Error('Rule check does not belong to the specified case');
+    }
+
+    // Delete the rule check
+    await ctx.db.delete(args.ruleCheckId);
+
+    // Log the removal
+    await ctx.db.insert('activityLogs', {
+      caseId: args.caseId,
+      action: 'rule_check_removed',
+      details: `Rule check "${ruleCheck.ruleTitle}" removed from case`,
+      performedBy: 'user',
+      timestamp: new Date().toISOString(),
+    });
+
+    return args.ruleCheckId;
+  },
+});
+
 // Get file URL from storage ID
 export const getFileUrl = query({
   args: {

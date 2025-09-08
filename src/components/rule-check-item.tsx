@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
 import type { Id } from '../../convex/_generated/dataModel';
+import { RemoveRuleCheckButton } from './remove-rule-check-button';
 
 type RuleCheckItemProps = {
   ruleCheck: any; // The rule check with rule details
@@ -15,6 +16,7 @@ type RuleCheckItemProps = {
     status: string,
     notes?: string
   ) => void;
+  onRemoveRuleCheck: (ruleCheckId: Id<'ruleChecks'>) => void;
 };
 
 function getRuleStatusVariant(
@@ -52,6 +54,7 @@ function getBadgeClass(status: string): string {
 export function RuleCheckItem({
   ruleCheck,
   onUpdateStatus,
+  onRemoveRuleCheck,
 }: RuleCheckItemProps) {
   const [notes, setNotes] = useState(ruleCheck.notes || '');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -200,6 +203,13 @@ export function RuleCheckItem({
             >
               Deny
             </Button>
+            <RemoveRuleCheckButton
+              ruleCheckId={ruleCheck._id}
+              caseId={ruleCheck.caseId}
+              ruleTitle={ruleCheck.rule?.title || ruleCheck.ruleTitle}
+              onRemove={onRemoveRuleCheck}
+              disabled={isUpdating}
+            />
           </div>
         </div>
       )}

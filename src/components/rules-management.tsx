@@ -25,6 +25,93 @@ import { Textarea } from '@/components/ui/textarea';
 import { api } from '../../convex/_generated/api';
 import type { Doc, Id } from '../../convex/_generated/dataModel';
 
+function EditRuleDialog({ rule }: { rule: Doc<'rules'> }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(rule.title);
+  const [description, setDescription] = useState(rule.description);
+
+  const updateRuleMutation = useMutation(api.rules.updateRule);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await updateRuleMutation({
+        id: rule._id,
+        title: title.trim(),
+        description: description.trim(),
+      });
+
+      // Close dialog
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to update rule:', error);
+      // TODO: Add proper error handling with toast notifications
+    }
+  };
+
+  const isFormValid = title.trim() && description.trim();
+  const hasChanges =
+    title.trim() !== rule.title || description.trim() !== rule.description;
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant='ghost' size='sm'>
+          <Edit className='h-4 w-4' />
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Edit Rule</SheetTitle>
+          <SheetDescription>
+            Update the rule details to modify your workflow processes.
+          </SheetDescription>
+        </SheetHeader>
+        <form onSubmit={handleSubmit} className='space-y-4 py-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='edit-title'>Rule Title</Label>
+            <Input
+              id='edit-title'
+              placeholder='Enter rule title...'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='edit-description'>Description</Label>
+            <Textarea
+              id='edit-description'
+              placeholder='Enter rule description...'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              required
+            />
+          </div>
+        </form>
+        <SheetFooter>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type='submit'
+            onClick={handleSubmit}
+            disabled={!isFormValid || !hasChanges}
+          >
+            Update Rule
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 function AddRuleDialog() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -136,12 +223,7 @@ export function RulesManagement() {
                   </p>
                 </div>
                 <div className='flex items-center space-x-2'>
-                  <Button variant='ghost' size='sm'>
-                    <Settings className='h-4 w-4' />
-                  </Button>
-                  <Button variant='ghost' size='sm'>
-                    <Edit className='h-4 w-4' />
-                  </Button>
+                  <EditRuleDialog rule={rule} />
                   <DeleteButton id={rule._id} type='rule' name={rule.title} />
                 </div>
               </div>

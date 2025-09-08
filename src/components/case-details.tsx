@@ -66,62 +66,72 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
           <CardHeader>
             <CardTitle>Patient Information</CardTitle>
           </CardHeader>
-          <CardContent className='space-y-4'>
+          <CardContent className='space-y-3'>
             {caseData.patient ? (
               <>
-                <div className='flex items-center gap-2'>
-                  <User className='text-muted-foreground h-4 w-4' />
-                  <div>
-                    <p className='text-muted-foreground text-sm'>Name</p>
-                    <p className='font-medium'>{caseData.patient.name}</p>
+                <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+                  <div className='flex items-center gap-2'>
+                    <User className='text-muted-foreground h-3 w-3' />
+                    <div>
+                      <p className='text-muted-foreground text-xs'>Name</p>
+                      <p className='text-sm font-medium'>
+                        {caseData.patient.name}
+                      </p>
+                    </div>
                   </div>
+                  {caseData.patient.email && (
+                    <div className='flex items-center gap-2'>
+                      <Mail className='text-muted-foreground h-3 w-3' />
+                      <div>
+                        <p className='text-muted-foreground text-xs'>Email</p>
+                        <p className='text-sm font-medium'>
+                          {caseData.patient.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {caseData.patient.phone && (
+                    <div className='flex items-center gap-2'>
+                      <Phone className='text-muted-foreground h-3 w-3' />
+                      <div>
+                        <p className='text-muted-foreground text-xs'>Phone</p>
+                        <p className='text-sm font-medium'>
+                          {caseData.patient.phone}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {caseData.patient.email && (
-                  <div className='flex items-center gap-2'>
-                    <Mail className='text-muted-foreground h-4 w-4' />
-                    <div>
-                      <p className='text-muted-foreground text-sm'>Email</p>
-                      <p className='font-medium'>{caseData.patient.email}</p>
-                    </div>
-                  </div>
-                )}
-                {caseData.patient.phone && (
-                  <div className='flex items-center gap-2'>
-                    <Phone className='text-muted-foreground h-4 w-4' />
-                    <div>
-                      <p className='text-muted-foreground text-sm'>Phone</p>
-                      <p className='font-medium'>{caseData.patient.phone}</p>
-                    </div>
-                  </div>
-                )}
                 {/* Additional Patient Data */}
                 {caseData.patient.additionalData &&
                   caseData.patient.additionalData.length > 0 && (
-                    <div className='space-y-3'>
+                    <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
                       {caseData.patient.additionalData
                         .filter((data) => data.name && data.value) // Only show non-empty data
                         .slice(0, 8) // Limit to first 8 items to avoid clutter
                         .map((data, index) => (
                           <div key={index} className='flex items-start gap-2'>
                             {data.name.toLowerCase().includes('date') && (
-                              <Calendar className='text-muted-foreground mt-0.5 h-4 w-4' />
+                              <Calendar className='text-muted-foreground mt-0.5 h-3 w-3' />
                             )}
                             {data.name.toLowerCase().includes('phone') && (
-                              <Phone className='text-muted-foreground mt-0.5 h-4 w-4' />
+                              <Phone className='text-muted-foreground mt-0.5 h-3 w-3' />
                             )}
                             {data.name.toLowerCase().includes('email') && (
-                              <Mail className='text-muted-foreground mt-0.5 h-4 w-4' />
+                              <Mail className='text-muted-foreground mt-0.5 h-3 w-3' />
                             )}
                             {data.name.toLowerCase().includes('insurance') && (
-                              <CreditCard className='text-muted-foreground mt-0.5 h-4 w-4' />
+                              <CreditCard className='text-muted-foreground mt-0.5 h-3 w-3' />
                             )}
                             <div className='flex-1'>
-                              <p className='text-muted-foreground text-sm'>
+                              <p className='text-muted-foreground text-xs'>
                                 {data.name}
                               </p>
-                              <p className='font-medium'>{data.value}</p>
+                              <p className='text-sm font-medium'>
+                                {data.value}
+                              </p>
                               {data.confidence && data.confidence < 0.8 && (
-                                <p className='text-xs text-yellow-600'>
+                                <p className='text-[10px] text-yellow-600'>
                                   Confidence:{' '}
                                   {Math.round(data.confidence * 100)}%
                                 </p>
@@ -145,27 +155,27 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
           <CardHeader>
             <CardTitle>Insurance Information</CardTitle>
           </CardHeader>
-          <CardContent className='space-y-4'>
+          <CardContent className='space-y-3'>
             {caseData.patient?.additionalData?.some((data) =>
               data.name.toLowerCase().includes('insurance')
             ) ? (
               <>
                 {/* Insurance Information from Additional Data */}
-                <div className='space-y-3'>
+                <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
                   {caseData.patient.additionalData
                     .filter((data) =>
                       data.name.toLowerCase().includes('insurance')
                     )
                     .map((data, index) => (
                       <div key={index} className='flex items-center gap-2'>
-                        <CreditCard className='text-muted-foreground h-4 w-4' />
+                        <CreditCard className='text-muted-foreground h-3 w-3' />
                         <div>
-                          <p className='text-muted-foreground text-sm'>
+                          <p className='text-muted-foreground text-xs'>
                             {data.name}
                           </p>
-                          <p className='font-medium'>{data.value}</p>
+                          <p className='text-sm font-medium'>{data.value}</p>
                           {data.confidence && data.confidence < 0.8 && (
-                            <p className='text-xs text-yellow-600'>
+                            <p className='text-[10px] text-yellow-600'>
                               Confidence: {Math.round(data.confidence * 100)}%
                             </p>
                           )}
@@ -177,7 +187,7 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
                 {/* Case-level eligibility status */}
                 {caseData.eligibilityStatus && (
                   <div>
-                    <p className='text-muted-foreground text-sm'>
+                    <p className='text-muted-foreground text-xs'>
                       Eligibility Status
                     </p>
                     <Badge
