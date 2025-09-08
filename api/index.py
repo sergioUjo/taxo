@@ -36,6 +36,7 @@ async def handle_chat_data(request: Request):
             "status": "new"
         }
     })
+    await _process_rules(request.case_id)
     
 @app.post("/api/classify-referral")
 async def classify(request: Request):

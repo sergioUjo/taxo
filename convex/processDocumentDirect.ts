@@ -22,7 +22,6 @@ async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
       },
       body: JSON.stringify({
         pdf_path: pdfUrl,
-        case_id: caseId,
       }),
     });
 
@@ -63,41 +62,7 @@ export const processDocumentDirectly = action({
         throw new Error('Could not get document URL from storage');
       }
 
-      // Extract patient data directly
-      let patientData: {
-        name?: string;
-        email?: string;
-        phone?: string;
-        additionalData?: { name: string; value: string }[];
-      } = await extractPatientFromPDF(documentUrl, args.caseId);
-
-      if (!patientData.email) {
-        delete patientData.email;
-      }
-      if (!patientData.phone) {
-        delete patientData.phone;
-      }
-      if (!patientData.name) {
-        delete patientData.name;
-      }
-      console.log('Extracted patient data:', patientData);
-
-      const patientId: Id<'patients'> = await ctx.runMutation(
-        api.patients.createPatient,
-        patientData as any
-      );
-      await ctx.runMutation(api.cases.updateCase, {
-        caseId: args.caseId,
-        updates: {
-          patientId: patientId,
-        },
-      });
-
-      return {
-        success: true,
-        patientId,
-        extractedData: patientData,
-      };
+      await extractPatientFromPDF(documentUrl, args.caseId);
     } catch (error) {
       console.error('Direct document processing failed:', error);
 
