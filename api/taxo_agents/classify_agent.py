@@ -113,7 +113,7 @@ classify_agent = Agent(
     name="Classify Agent",
     instructions=INSTRUCTIONS,
     output_type=ClassifyOutput,
-    model="gpt-4o",
+    model="gpt-5",
 )
 class ProcedureOutput(BaseModel):
     procedure_name: str
