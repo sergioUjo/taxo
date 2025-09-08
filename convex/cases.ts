@@ -278,8 +278,6 @@ export const scheduleDocumentProcessing = mutation({
       api.processDocumentDirect.processDocumentDirectly,
       {
         caseId: args.caseId,
-        documentId: documents[0]._id,
-        documentPath: documents[0].storageId as string,
       }
     );
   },

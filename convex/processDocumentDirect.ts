@@ -5,8 +5,8 @@ import { Id } from './_generated/dataModel';
 import { action } from './_generated/server';
 
 // Call Next.js API endpoint (which redirects to FastAPI in development)
-async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
-  console.log(`Extracting patient data from: ${pdfUrl}`);
+async function extractPatientFromPDF(caseId: string) {
+  console.log(`Extracting patient data from: ${caseId}`);
 
   // Get the app URL from environment variables
   const appUrl = process.env.APP_URL;
@@ -21,7 +21,7 @@ async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        pdf_path: pdfUrl,
+        caseId: caseId,
       }),
     });
 
@@ -31,10 +31,7 @@ async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
       );
     }
 
-    const result = await response.json();
-    console.log('FastAPI response:', result);
-
-    return result;
+    return 'result';
   } catch (error) {
     console.error('Error calling FastAPI endpoint:', error);
     throw error;
@@ -45,24 +42,11 @@ async function extractPatientFromPDF(pdfUrl: string, caseId: string) {
 export const processDocumentDirectly = action({
   args: {
     caseId: v.id('cases'),
-    documentId: v.id('documents'),
-    documentPath: v.string(), // Storage ID for the document
   },
   handler: async (ctx, args) => {
     try {
-      console.log(
-        `Processing document directly: ${args.documentId}`,
-        args.documentPath,
-        args.caseId
-      );
-
-      // Get the document URL from storage
-      const documentUrl = await ctx.storage.getUrl(args.documentPath);
-      if (!documentUrl) {
-        throw new Error('Could not get document URL from storage');
-      }
-
-      await extractPatientFromPDF(documentUrl, args.caseId);
+      await extractPatientFromPDF(args.caseId);
+      return '';
     } catch (error) {
       console.error('Direct document processing failed:', error);
 
