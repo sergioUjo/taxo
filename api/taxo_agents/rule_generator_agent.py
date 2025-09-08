@@ -119,7 +119,7 @@ rule_generator_agent = Agent(
     Always provide reasoning for why you selected these specific rules for the given procedure.
     """,
     output_type=RuleGenerationOutput,
-    model="gpt-4o",
+    model="gpt-5",
 )
 
 
