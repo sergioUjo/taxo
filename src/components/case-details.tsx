@@ -8,7 +8,6 @@ import {
   Activity,
   ArrowLeft,
   Calendar,
-  Clock,
   CreditCard,
   FileText,
   Mail,
@@ -30,44 +29,7 @@ import {
 
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
-
-function getStatusVariant(
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (status) {
-    case 'new':
-      return 'secondary';
-    case 'processing':
-      return 'outline';
-    case 'pending-info':
-      return 'outline';
-    case 'eligible':
-      return 'default';
-    case 'scheduled':
-      return 'default';
-    case 'completed':
-      return 'secondary';
-    default:
-      return 'default';
-  }
-}
-
-function getPriorityVariant(
-  priority: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (priority) {
-    case 'low':
-      return 'secondary';
-    case 'medium':
-      return 'default';
-    case 'high':
-      return 'outline';
-    case 'urgent':
-      return 'destructive';
-    default:
-      return 'default';
-  }
-}
+import { CaseStatusCell } from './case-status-cell';
 
 export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
   const caseData = useQuery(api.cases.getCaseWithDocuments, { caseId });
@@ -95,45 +57,10 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
             {format(new Date(caseData.createdAt), "MMMM d, yyyy 'at' h:mm a")}
           </p>
         </div>
-        <Badge variant={getStatusVariant(caseData.status)}>
-          {caseData.status.replace('-', ' ').toUpperCase()}
-        </Badge>
-        <Badge variant={getPriorityVariant(caseData.priority || 'medium')}>
-          {(caseData.priority || 'medium').toUpperCase()} PRIORITY
-        </Badge>
+        <CaseStatusCell status={caseData.status} />
       </div>
 
       <div className='grid gap-6 md:grid-cols-2'>
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            <div>
-              <p className='text-muted-foreground text-sm'>Referral Source</p>
-              <p className='font-medium'>
-                {caseData.referralSource.replace('-', ' ')}
-              </p>
-            </div>
-            <div>
-              <p className='text-muted-foreground text-sm'>Last Updated</p>
-              <p className='font-medium'>
-                {format(
-                  new Date(caseData.updatedAt),
-                  "MMMM d, yyyy 'at' h:mm a"
-                )}
-              </p>
-            </div>
-            {caseData.notes && (
-              <div>
-                <p className='text-muted-foreground text-sm'>Notes</p>
-                <p className='font-medium'>{caseData.notes}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Patient Information */}
         <Card>
           <CardHeader>
@@ -272,53 +199,6 @@ export function CaseDetails({ caseId }: { caseId: Id<'cases'> }) {
             ) : (
               <p className='text-muted-foreground'>
                 Insurance information not yet extracted from documents
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Appointment Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Appointment Information</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            {caseData.appointmentDate ? (
-              <>
-                <div className='flex items-center gap-2'>
-                  <Calendar className='text-muted-foreground h-4 w-4' />
-                  <div>
-                    <p className='text-muted-foreground text-sm'>Date</p>
-                    <p className='font-medium'>
-                      {format(
-                        new Date(caseData.appointmentDate),
-                        'MMMM d, yyyy'
-                      )}
-                    </p>
-                  </div>
-                </div>
-                {caseData.appointmentTime && (
-                  <div className='flex items-center gap-2'>
-                    <Clock className='text-muted-foreground h-4 w-4' />
-                    <div>
-                      <p className='text-muted-foreground text-sm'>Time</p>
-                      <p className='font-medium'>{caseData.appointmentTime}</p>
-                    </div>
-                  </div>
-                )}
-                {caseData.provider && (
-                  <div className='flex items-center gap-2'>
-                    <User className='text-muted-foreground h-4 w-4' />
-                    <div>
-                      <p className='text-muted-foreground text-sm'>Provider</p>
-                      <p className='font-medium'>{caseData.provider}</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className='text-muted-foreground'>
-                No appointment scheduled yet
               </p>
             )}
           </CardContent>

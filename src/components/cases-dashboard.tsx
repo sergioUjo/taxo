@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { FileText, Plus } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,45 +24,8 @@ import {
 
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { CaseStatusCell } from './case-status-cell';
 import { RulesStatusCell } from './rules-status-cell';
-
-function getStatusVariant(
-  status: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (status) {
-    case 'new':
-      return 'secondary';
-    case 'processing':
-      return 'outline';
-    case 'pending-info':
-      return 'outline';
-    case 'eligible':
-      return 'default';
-    case 'scheduled':
-      return 'default';
-    case 'completed':
-      return 'secondary';
-    default:
-      return 'default';
-  }
-}
-
-function getPriorityVariant(
-  priority: string
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (priority) {
-    case 'low':
-      return 'secondary';
-    case 'medium':
-      return 'default';
-    case 'high':
-      return 'outline';
-    case 'urgent':
-      return 'destructive';
-    default:
-      return 'default';
-  }
-}
 
 export function CasesDashboard() {
   const cases = useQuery(api.cases.getAllCases, {});
@@ -146,28 +108,10 @@ export function CasesDashboard() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <div className='flex flex-wrap gap-1'>
-                    <Badge
-                      variant={getStatusVariant(caseItem.status)}
-                      className='text-xs'
-                    >
-                      {caseItem.status.replace('-', ' ')}
-                    </Badge>
-                    {caseItem.eligibilityStatus && (
-                      <Badge
-                        variant={
-                          caseItem.eligibilityStatus === 'eligible'
-                            ? 'default'
-                            : caseItem.eligibilityStatus === 'not-eligible'
-                              ? 'destructive'
-                              : 'secondary'
-                        }
-                        className='text-xs'
-                      >
-                        {caseItem.eligibilityStatus.replace('-', ' ')}
-                      </Badge>
-                    )}
-                  </div>
+                  <CaseStatusCell
+                    status={caseItem.status}
+                    eligibilityStatus={caseItem.eligibilityStatus}
+                  />
                 </TableCell>
                 <TableCell>
                   <RulesStatusCell caseId={caseItem._id} />

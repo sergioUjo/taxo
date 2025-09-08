@@ -1,11 +1,14 @@
 import logging
-import os
-from typing import List
-
 from agents import Agent, Runner
 from pydantic import BaseModel
+from typing import List
+
 from api.convex_client import convex_client
+
 client = convex_client
+
+# Import rule generator (will be used when needed)
+from api.taxo_agents.rule_generator_agent import create_rules_for_procedure
 INSTRUCTIONS = """
 You are a clinical triage and routing assistant. Given a medical procedure requested and a description classify it.
 
@@ -81,9 +84,11 @@ def create_procedure(treatment_type_id:str, procedure_name:str, description:str)
         treatment_type_id: The id of the treatment type
         procedure: The name of the procedure
         description: The description of the procedure
+    Returns:
+        The ID of the created procedure
     """
-    client.mutation("procedures:createProcedure", {"treatmentTypeId": treatment_type_id, "name": procedure_name, "description": description})
-    return procedure_name
+    procedure_id = client.mutation("procedures:createProcedure", {"treatmentTypeId": treatment_type_id, "name": procedure_name, "description": description})
+    return procedure_id
 
 class ClassifyOutput(BaseModel):
     specialty: str
@@ -179,9 +184,11 @@ async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
         matched_treatment_type = matched_treatment_type["_id"]
 
     matched_procedure = next((p for p in procedures if p['name'] == result.procedure), None)
+    procedure_is_new = False
     if matched_procedure is None:
-        procedure = create_procedure(matched_treatment_type, result.procedure, result.procedure_description)
-        matched_procedure = procedure
+        procedure_id = create_procedure(matched_treatment_type, result.procedure, result.procedure_description)
+        matched_procedure = procedure_id
+        procedure_is_new = True
     else:
         matched_procedure = matched_procedure["_id"]
 
@@ -192,4 +199,21 @@ async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
         "procedureId": matched_procedure,
         "classifiedBy": "ai",
     })
+    
+    # Generate rules for new procedures
+    if procedure_is_new:
+        try:
+            await create_rules_for_procedure(
+                procedure_id=matched_procedure,
+                procedure_name=result.procedure,
+                procedure_description=result.procedure_description,
+                specialty_name=result.specialty,
+                treatment_type_name=result.treatment_type,
+                specialty_description=result.specialty_description,
+                treatment_type_description=result.treatment_type_description
+            )
+            logger.info(f"Successfully generated rules for new procedure: {result.procedure}")
+        except Exception as exc:
+            logger.error(f"Failed to generate rules for new procedure {result.procedure}: {exc}")
+    
     return result

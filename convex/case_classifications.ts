@@ -119,22 +119,28 @@ export const classifyCaseWithProcedure = mutation({
       .collect();
 
     const existingRuleIds = new Set(
-      existingRuleChecks.map((check) => check.ruleId)
+      existingRuleChecks.map((check) => check.originalRuleId).filter(Boolean)
     );
 
-    // Create rule checks for new rules only (initially set to "needs_information")
+    // Create rule checks for new rules only (initially set to "pending")
     const ruleCheckIds = [];
     for (const procedureRule of procedureRules) {
       if (!existingRuleIds.has(procedureRule.ruleId)) {
-        const ruleCheckId = await ctx.db.insert('ruleChecks', {
-          caseId: args.caseId,
-          ruleId: procedureRule.ruleId,
-          status: 'needs_information',
-          checkedBy: 'system',
-          checkedAt: now,
-          createdForClassificationId: classificationId,
-        });
-        ruleCheckIds.push(ruleCheckId);
+        // Get the rule details to copy into the rule check
+        const rule = await ctx.db.get(procedureRule.ruleId);
+        if (rule) {
+          const ruleCheckId = await ctx.db.insert('ruleChecks', {
+            caseId: args.caseId,
+            ruleTitle: rule.title,
+            ruleDescription: rule.description,
+            originalRuleId: procedureRule.ruleId,
+            status: 'pending',
+            checkedBy: 'system',
+            checkedAt: now,
+            createdForClassificationId: classificationId,
+          });
+          ruleCheckIds.push(ruleCheckId);
+        }
       }
     }
 
@@ -168,16 +174,15 @@ export const getCaseClassificationWithRuleChecks = query({
       .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
       .collect();
 
-    // Get rule details for each check
-    const ruleChecksWithDetails = await Promise.all(
-      ruleChecks.map(async (check) => {
-        const rule = await ctx.db.get(check.ruleId);
-        return {
-          ...check,
-          rule,
-        };
-      })
-    );
+    // Transform rule checks to include embedded rule data
+    const ruleChecksWithDetails = ruleChecks.map((check) => ({
+      ...check,
+      rule: {
+        _id: check.originalRuleId || null,
+        title: check.ruleTitle,
+        description: check.ruleDescription,
+      },
+    }));
 
     // Get specialty, treatment type, and procedure details
     const specialty = classification.specialtyId

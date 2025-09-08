@@ -27,9 +27,7 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
   );
 
   // Mutations
-  const updateRuleStatus = useMutation(
-    api.case_classifications.updateRuleCheckStatus
-  );
+  const updateRuleCheck = useMutation(api.cases.updateRuleCheck);
 
   const handleUpdateRuleStatus = async (
     ruleCheckId: Id<'ruleChecks'>,
@@ -37,14 +35,21 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
     notes?: string
   ) => {
     try {
-      await updateRuleStatus({
-        ruleCheckId,
+      // Find the rule check to get its title
+      const ruleCheck = classificationData?.ruleChecks?.find(
+        (rc) => rc._id === ruleCheckId
+      );
+      if (!ruleCheck) return;
+
+      await updateRuleCheck({
+        caseId,
+        ruleTitle: ruleCheck.ruleTitle,
         status,
-        notes,
-        checkedBy: 'user', // In a real app, this would be the current user
+        reasoning: notes || '',
+        requiredAdditionalInfo: [],
       });
     } catch (error) {
-      console.error('Error updating rule status:', error);
+      console.error('Error updating rule check:', error);
     }
   };
 
@@ -71,24 +76,26 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
       </CardHeader>
       <CardContent className='space-y-4'>
         {classificationData && (
-          <div className='grid gap-2 md:grid-cols-3'>
-            <div>
-              <p className='text-muted-foreground text-sm'>Specialty</p>
-              <p className='font-medium'>
-                {classificationData.specialty?.name}
-              </p>
-            </div>
-            <div>
-              <p className='text-muted-foreground text-sm'>Treatment Type</p>
-              <p className='font-medium'>
-                {classificationData.treatmentType?.name}
-              </p>
-            </div>
-            <div>
-              <p className='text-muted-foreground text-sm'>Procedure</p>
-              <p className='font-medium'>
-                {classificationData.procedure?.name}
-              </p>
+          <div className='space-y-4'>
+            <div className='grid gap-2 md:grid-cols-3'>
+              <div>
+                <p className='text-muted-foreground text-sm'>Specialty</p>
+                <p className='font-medium'>
+                  {classificationData.specialty?.name}
+                </p>
+              </div>
+              <div>
+                <p className='text-muted-foreground text-sm'>Treatment Type</p>
+                <p className='font-medium'>
+                  {classificationData.treatmentType?.name}
+                </p>
+              </div>
+              <div>
+                <p className='text-muted-foreground text-sm'>Procedure</p>
+                <p className='font-medium'>
+                  {classificationData.procedure?.name}
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -98,7 +105,48 @@ export function CaseClassification({ caseId }: CaseClassificationProps) {
           classificationData.ruleChecks &&
           classificationData.ruleChecks.length > 0 && (
             <div className='mt-6'>
-              <h4 className='mb-4 font-semibold'>Rule Checks</h4>
+              <div className='mb-4 flex items-center justify-between'>
+                <h4 className='font-semibold'>Rule Checks</h4>
+                <div className='text-muted-foreground flex gap-2 text-xs'>
+                  <span>Total: {classificationData.ruleChecks.length}</span>
+                  <span>•</span>
+                  <span>
+                    Valid:{' '}
+                    {
+                      classificationData.ruleChecks.filter(
+                        (rc) => rc.status === 'valid'
+                      ).length
+                    }
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Pending:{' '}
+                    {
+                      classificationData.ruleChecks.filter(
+                        (rc) => rc.status === 'pending'
+                      ).length
+                    }
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Needs Info:{' '}
+                    {
+                      classificationData.ruleChecks.filter(
+                        (rc) => rc.status === 'needs_more_information'
+                      ).length
+                    }
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Denied:{' '}
+                    {
+                      classificationData.ruleChecks.filter(
+                        (rc) => rc.status === 'deny'
+                      ).length
+                    }
+                  </span>
+                </div>
+              </div>
               <div className='divide-y rounded-lg border'>
                 {classificationData.ruleChecks.map((ruleCheck) => (
                   <RuleCheckItem

@@ -164,7 +164,15 @@ export const getCaseWithDocuments = query({
     if (caseData.patientId) {
       patient = await ctx.db.get(caseData.patientId);
     }
-
+    for (const document of documents) {
+      const documentUrl = await ctx.storage.getUrl(
+        document.storageId as string
+      );
+      if (!documentUrl) {
+        throw new Error('Could not get document URL from storage');
+      }
+      document.fileUrl = documentUrl;
+    }
     return {
       ...caseData,
       patient,
@@ -276,6 +284,85 @@ export const scheduleDocumentProcessing = mutation({
     );
   },
 });
+
+// Get case rule checks (rule data is embedded in the rule check)
+export const getCaseRuleChecks = query({
+  args: {
+    caseId: v.id('cases'),
+  },
+  handler: async (ctx, args) => {
+    // Get all rule checks for this case - rule data is now embedded
+    const ruleChecks = await ctx.db
+      .query('ruleChecks')
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
+      .collect();
+
+    // Transform to match expected format with embedded rule data
+    const ruleChecksWithDetails = ruleChecks.map((check) => ({
+      ...check,
+      rule: {
+        _id: check.originalRuleId || null,
+        title: check.ruleTitle,
+        description: check.ruleDescription,
+      },
+    }));
+
+    // Sort by rule title for consistent ordering
+    return ruleChecksWithDetails.sort((a, b) =>
+      a.ruleTitle.localeCompare(b.ruleTitle)
+    );
+  },
+});
+
+// Update rule check with processing results
+export const updateRuleCheck = mutation({
+  args: {
+    caseId: v.id('cases'),
+    ruleTitle: v.string(),
+    status: v.string(),
+    reasoning: v.string(),
+    requiredAdditionalInfo: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args) => {
+    // Find the rule check for this case and rule title (now stored directly)
+    const ruleChecks = await ctx.db
+      .query('ruleChecks')
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
+      .collect();
+
+    // Find the rule check that matches the rule title
+    const ruleCheckToUpdate = ruleChecks.find(
+      (check) => check.ruleTitle === args.ruleTitle
+    );
+
+    if (!ruleCheckToUpdate) {
+      throw new Error(
+        `Rule check not found for case ${args.caseId} and rule "${args.ruleTitle}"`
+      );
+    }
+
+    // Update the rule check with the processing results
+    await ctx.db.patch(ruleCheckToUpdate._id, {
+      status: args.status,
+      reasoning: args.reasoning,
+      requiredAdditionalInfo: args.requiredAdditionalInfo || [],
+      processedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Log the rule processing
+    await ctx.db.insert('activityLogs', {
+      caseId: args.caseId,
+      action: 'rule_processed',
+      details: `Rule "${args.ruleTitle}" processed with status: ${args.status}`,
+      performedBy: 'ai_agent',
+      timestamp: new Date().toISOString(),
+    });
+
+    return ruleCheckToUpdate._id;
+  },
+});
+
 // Get file URL from storage ID
 export const getFileUrl = query({
   args: {

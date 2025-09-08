@@ -21,12 +21,14 @@ function getRuleStatusVariant(
   status: string
 ): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'passed':
+    case 'valid':
       return 'default';
-    case 'needs_information':
+    case 'needs_more_information':
       return 'outline';
-    case 'denied':
+    case 'deny':
       return 'destructive';
+    case 'pending':
+      return 'secondary';
     default:
       return 'secondary';
   }
@@ -34,10 +36,14 @@ function getRuleStatusVariant(
 
 function getBadgeClass(status: string): string {
   switch (status) {
-    case 'passed':
+    case 'valid':
       return 'bg-green-500 text-white border-green-500';
-    case 'needs_information':
+    case 'needs_more_information':
       return 'bg-amber-500 text-white border-amber-500';
+    case 'deny':
+      return 'bg-red-500 text-white border-red-500';
+    case 'pending':
+      return 'bg-blue-500 text-white border-blue-500 animate-pulse';
     default:
       return '';
   }
@@ -101,6 +107,55 @@ export function RuleCheckItem({
       {/* Expanded Content */}
       {isExpanded && (
         <div className='space-y-3 border-t p-3'>
+          {/* Rule Description */}
+
+          {/* AI Reasoning (if processed by AI) */}
+          {ruleCheck.reasoning && (
+            <div>
+              <label className='text-sm font-medium'>Reasoning</label>
+              <p className='text-muted-foreground bg-muted mt-1 rounded p-2 text-sm'>
+                {ruleCheck.reasoning}
+              </p>
+            </div>
+          )}
+
+          {/* Required Additional Information */}
+          {ruleCheck.requiredAdditionalInfo &&
+            ruleCheck.requiredAdditionalInfo.length > 0 && (
+              <div>
+                <label className='text-sm font-medium'>
+                  Required Additional Information
+                </label>
+                <ul className='text-muted-foreground mt-1 space-y-1 text-sm'>
+                  {ruleCheck.requiredAdditionalInfo.map(
+                    (info: string, index: number) => (
+                      <li key={index} className='flex items-start gap-2'>
+                        <span className='mt-0.5 text-blue-500'>•</span>
+                        {info}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+          {/* Processing Information */}
+          <div className='text-muted-foreground grid grid-cols-2 gap-4 text-xs'>
+            {ruleCheck.checkedBy && (
+              <div>
+                <span className='font-medium'>Checked by:</span>{' '}
+                {ruleCheck.checkedBy}
+              </div>
+            )}
+            {ruleCheck.updatedAt && (
+              <div>
+                <span className='font-medium'>Last updated:</span>{' '}
+                {new Date(ruleCheck.updatedAt).toLocaleString()}
+              </div>
+            )}
+          </div>
+
+          {/* Notes */}
           <div>
             <label className='text-sm font-medium'>Notes</label>
             <Textarea
@@ -112,33 +167,34 @@ export function RuleCheckItem({
             />
           </div>
 
+          {/* Action Buttons */}
           <div className='flex gap-2'>
             <Button
               size='sm'
-              variant={ruleCheck.status === 'passed' ? 'default' : 'outline'}
-              onClick={() => handleStatusChange('passed')}
+              variant={ruleCheck.status === 'valid' ? 'default' : 'outline'}
+              onClick={() => handleStatusChange('valid')}
               disabled={isUpdating}
               className='text-xs'
             >
-              Pass
+              Valid
             </Button>
             <Button
               size='sm'
               variant={
-                ruleCheck.status === 'needs_information' ? 'default' : 'outline'
+                ruleCheck.status === 'needs_more_information'
+                  ? 'default'
+                  : 'outline'
               }
-              onClick={() => handleStatusChange('needs_information')}
+              onClick={() => handleStatusChange('needs_more_information')}
               disabled={isUpdating}
               className='text-xs'
             >
-              Needs Info
+              Needs More Info
             </Button>
             <Button
               size='sm'
-              variant={
-                ruleCheck.status === 'denied' ? 'destructive' : 'outline'
-              }
-              onClick={() => handleStatusChange('denied')}
+              variant={ruleCheck.status === 'deny' ? 'destructive' : 'outline'}
+              onClick={() => handleStatusChange('deny')}
               disabled={isUpdating}
               className='text-xs'
             >

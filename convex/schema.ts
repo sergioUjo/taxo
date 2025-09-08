@@ -162,20 +162,34 @@ export default defineSchema({
     .index('by_treatment_type', ['treatmentTypeId'])
     .index('by_procedure', ['procedureId']),
 
-  // Rule Checks - tracks the status of each rule for a case
+  // Rule Checks - tracks the status of each rule for a case (stores rule copy, not reference)
   ruleChecks: defineTable({
     caseId: v.id('cases'),
-    ruleId: v.id('rules'),
-    status: v.string(), // "passed", "needs_information", "denied"
+
+    // Rule data (copied when rule check is created)
+    ruleTitle: v.string(),
+    ruleDescription: v.string(),
+    originalRuleId: v.optional(v.id('rules')), // Reference to original rule for audit purposes
+
+    // Processing results
+    status: v.string(), // "pending", "valid", "needs_more_information", "deny"
     notes: v.optional(v.string()), // Additional notes about why the rule passed/failed
+    reasoning: v.optional(v.string()), // Detailed reasoning from AI processing
+    requiredAdditionalInfo: v.optional(v.array(v.string())), // List of additional info needed
+
+    // Metadata
     checkedBy: v.string(), // "ai", "user", "system"
     checkedAt: v.string(),
+    processedAt: v.optional(v.string()), // When AI processing completed
     reviewedBy: v.optional(v.string()),
     reviewedAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()), // Last updated timestamp
+
     // Keep track of which classification this rule check was created for (for audit purposes)
     createdForClassificationId: v.optional(v.id('caseClassifications')),
   })
     .index('by_case', ['caseId'])
-    .index('by_rule', ['ruleId'])
-    .index('by_status', ['status']),
+    .index('by_rule_title', ['ruleTitle'])
+    .index('by_status', ['status'])
+    .index('by_original_rule', ['originalRuleId']),
 });
