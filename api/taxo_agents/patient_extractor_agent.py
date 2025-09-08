@@ -61,9 +61,11 @@ def find_or_create_patient(patient_info: PatientInfo) -> str:
     Find an existing patient or create a new one based on the extracted patient information.
     Returns the patient ID.
     """
+    print(patient_info)
     try:
-        # First, try to find existing patient by email
+        # First, try to find existing patient by email check if
         if patient_info.email:
+            print(f"Finding patient by email: {patient_info.email}")
             existing_patient = convex_client.query("patients:findPatientByEmail", {"email": patient_info.email})
             if existing_patient:
                 logger.info(f"Found existing patient by email: {existing_patient['_id']}")
@@ -83,19 +85,7 @@ def find_or_create_patient(patient_info: PatientInfo) -> str:
                 logger.info(f"Found existing patient by MRN: {existing_patient['_id']}")
                 return existing_patient["_id"]
         
-        # Check for potential duplicates by name and DOB
-        if patient_info.name and patient_info.date_of_birth:
-            additional_data = [{"name": "Date of Birth", "value": patient_info.date_of_birth}]
-            potential_duplicates = convex_client.query("patients:findPotentialDuplicatePatients", {
-                "name": patient_info.name,
-                "email": patient_info.email,
-                "phone": patient_info.phone,
-                "additionalDataToMatch": additional_data
-            })
-            if potential_duplicates and len(potential_duplicates) > 0:
-                logger.info(f"Found potential duplicate patient: {potential_duplicates[0]['patient']['_id']}")
-                return potential_duplicates[0]["patient"]["_id"]
-        
+
         # Create new patient if no existing patient found
         additional_data = []
         
@@ -172,14 +162,17 @@ def find_or_create_patient(patient_info: PatientInfo) -> str:
                 "extractedAt": datetime.now().isoformat()
             })
         
+        patient={}
+        if patient_info.name:
+            patient["name"] = patient_info.name
+        if patient_info.email:
+            patient["email"] = patient_info.email
+        if patient_info.phone:
+            patient["phone"] = patient_info.phone
+        patient["additionalData"] = additional_data
+
         # Create new patient
-        patient_id = convex_client.mutation("patients:createPatient", {
-            "name": patient_info.name,
-            "email": patient_info.email,
-            "phone": patient_info.phone,
-            "additionalData": additional_data,
-            "notes": "Created from document extraction"
-        })
+        patient_id = convex_client.mutation("patients:createPatient", patient)
         
         logger.info(f"Created new patient: {patient_id}")
         return patient_id

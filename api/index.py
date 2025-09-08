@@ -10,9 +10,7 @@ from typing import List, Optional
 
 from api.taxo_agents.classify_agent import classify_agent, classify_referral
 from api.taxo_agents.patient_extractor_agent import extract_patient_info
-
-
-
+from api.taxo_agents.struture_agent import get_file_as_string
 
 
 
@@ -27,8 +25,8 @@ class Request(BaseModel):
 
 @app.post("/api/process-pdf")
 async def handle_chat_data(request: Request):
-    file_content = get_file_as_string(request.pdf_path)
-    extract_patient_info(file_content, request.case_id)
+    file_content = await get_file_as_string(request.pdf_path)
+    await extract_patient_info(file_content, request.case_id)
     
 @app.post("/api/classify-referral")
 async def classify(request: Request):

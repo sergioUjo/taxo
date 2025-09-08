@@ -1,5 +1,9 @@
 
-
+from pydantic import BaseModel
+from agents import Agent, Runner
+import tempfile
+import requests
+import pymupdf4llm
 
 class FileStructure(BaseModel):
     structure: str
@@ -34,4 +38,5 @@ async def get_file_as_string(pdf_path: str) -> str:
         pdf_markdown = pymupdf4llm.to_markdown(tmp_pdf_path)
         structure = await Runner.run(file_structure_agent, pdf_markdown)
         structure = structure.final_output.structure
+        print(structure)
         return f"Structure:\n{structure}\nContent:\n{pdf_markdown}"
