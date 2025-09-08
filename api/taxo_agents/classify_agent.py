@@ -128,7 +128,7 @@ process_extractor = Agent(
     output_type=ProcedureOutput,
     model="gpt-4.1-mini"
 )
-async def classify_referral(referral: str) -> ClassifyOutput:
+async def classify_referral(referral: str, case_id: str) -> ClassifyOutput:
     requested_procedure = (await Runner.run(process_extractor, input=referral)).final_output
     specialties = list_specialties()
 
@@ -185,4 +185,11 @@ async def classify_referral(referral: str) -> ClassifyOutput:
     else:
         matched_procedure = matched_procedure["_id"]
 
+    convex_client.mutation("case_classifications:classifyCaseWithProcedure", {
+        "caseId": case_id,
+        "specialtyId": matched_specialty,
+        "treatmentTypeId": matched_treatment_type,
+        "procedureId": matched_procedure,
+        "classifiedBy": "ai",
+    })
     return result

@@ -92,16 +92,7 @@ export const classifyCaseWithProcedure = mutation({
       });
       classificationId = existingClassification._id;
 
-      // Delete existing rule checks
-      const existingRuleChecks = await ctx.db
-        .query('ruleChecks')
-        .withIndex('by_case_classification', (q) =>
-          q.eq('caseClassificationId', classificationId)
-        )
-        .collect();
-      for (const check of existingRuleChecks) {
-        await ctx.db.delete(check._id);
-      }
+      // Don't delete existing rule checks - they are now associated with the case, not the classification
     } else {
       // Create new classification
       classificationId = await ctx.db.insert('caseClassifications', {
@@ -121,17 +112,30 @@ export const classifyCaseWithProcedure = mutation({
       .withIndex('by_procedure', (q) => q.eq('procedureId', args.procedureId))
       .collect();
 
-    // Create rule checks for each rule (initially set to "needs_information")
+    // Get existing rule checks for this case
+    const existingRuleChecks = await ctx.db
+      .query('ruleChecks')
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
+      .collect();
+
+    const existingRuleIds = new Set(
+      existingRuleChecks.map((check) => check.ruleId)
+    );
+
+    // Create rule checks for new rules only (initially set to "needs_information")
     const ruleCheckIds = [];
     for (const procedureRule of procedureRules) {
-      const ruleCheckId = await ctx.db.insert('ruleChecks', {
-        caseClassificationId: classificationId,
-        ruleId: procedureRule.ruleId,
-        status: 'needs_information',
-        checkedBy: 'system',
-        checkedAt: now,
-      });
-      ruleCheckIds.push(ruleCheckId);
+      if (!existingRuleIds.has(procedureRule.ruleId)) {
+        const ruleCheckId = await ctx.db.insert('ruleChecks', {
+          caseId: args.caseId,
+          ruleId: procedureRule.ruleId,
+          status: 'needs_information',
+          checkedBy: 'system',
+          checkedAt: now,
+          createdForClassificationId: classificationId,
+        });
+        ruleCheckIds.push(ruleCheckId);
+      }
     }
 
     // Log the classification
@@ -161,9 +165,7 @@ export const getCaseClassificationWithRuleChecks = query({
     // Get rule checks
     const ruleChecks = await ctx.db
       .query('ruleChecks')
-      .withIndex('by_case_classification', (q) =>
-        q.eq('caseClassificationId', classification._id)
-      )
+      .withIndex('by_case', (q) => q.eq('caseId', args.caseId))
       .collect();
 
     // Get rule details for each check

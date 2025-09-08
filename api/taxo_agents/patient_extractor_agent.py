@@ -61,7 +61,6 @@ def find_or_create_patient(patient_info: PatientInfo) -> str:
     Find an existing patient or create a new one based on the extracted patient information.
     Returns the patient ID.
     """
-    print(patient_info)
     try:
         # First, try to find existing patient by email check if
         if patient_info.email:
